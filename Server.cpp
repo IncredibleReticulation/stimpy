@@ -8,12 +8,21 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <fstream>
 #include "ServerSocket.h"
 
 int main()
 {
-    //constant
-    const char LID[] = "user"; //user identifier
+    //users
+    const vector<string> user; //user identifier
+    ifstream fin;
+    string temp;
+    fin.open("users.txt");
+    while(!fin.eof())
+    {
+        getline(fin, temp);
+        user.pushback(temp);
+    }
 
     //variables
     int port = 8000; //port number to connect to//atoi(argv[1]); //port number to connect to
@@ -30,7 +39,7 @@ int main()
     sockServer.recvData(recMessage);
     
     //if they entered the wrong login ID, send back unwelcome and close connection
-    if(recMessage != LID)
+    if(!isAUser(recMessage, user))
     {
         sockServer.sendData("UNWELCOME\n"); //unwelcome message
 
@@ -55,4 +64,17 @@ int main()
     sockServer.closeConnection();
 
     return 0; //ends program
+}
+
+//Function that will decide whether or not the user is allowed to log in.
+bool isAUser(string s, vector v)
+{
+    for (int i = 0; i < v.size(); i++)
+    {
+        if (s == v[i])
+            return true;
+    }
+
+    return false;
+
 }
