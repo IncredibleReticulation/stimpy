@@ -12,5 +12,5 @@ class Status
 		static const int SMTP_SRV_NOT_AVAIL   = 421;
 		static const int SMTP_OUT_TIMEOUT     = 447;
 		static const int SMTP_CMD_SNTX_ERR    = 500;
-		static const int SMTP_MBOX_UNAV	      = 550;		
+		static const int SMTP_MBOX_UNAV	      = 550;
 };
