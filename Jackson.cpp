@@ -53,55 +53,43 @@ void ServerSocket::sendMail(helostring)
 	//getting the rcptto from the client
 	recvData(toaddress);
 
-	//checking to see if it's RCPT TO
-	if (toaddress.substr(0,7) == "RCPT TO")
+	
+
+	do //going to loop to add people to the vector
 	{
-		//checking to see if the user is valid
-		if (this->validateUser(verify.substr(9)))
+		//checking to see if it's RCPT TO
+		if (toaddress.substr(0,6) == "RCPT TO")
 		{
-			//if the username was valid, send back 250
-			sendData(Staus::SMTP_ACTION_COMPLETE);
-		}
+			//checking to see if the user is valid
+			if (this->validateUser(verify.substr(9)))
+			{
+				//if the username was valid, send back 250
+				sendData(Staus::SMTP_ACTION_COMPLETE);
+			}
 
-		//sending back a bad error code
-		if (!this->validateUser(verify.substr(9)))
-		{
-			sendData(Status::SMTP_CMD_SNTX_ERR);
-		}
+			//sending back a bad error code
+			else if (!this->validateUser(verify.substr(9)))
+			{
+				sendData(Status::SMTP_CMD_SNTX_ERR);
+			}
 
-		//putting the usernames into the vector
-		ServerSock.recipients.push_back(verify.substr(9));
+			//putting the usernames into the vector
+			ServerSock.recipients.push_back(verify.substr(9));
 
-	} while (toaddress.substr(0,7) == "RCPT TO");
+			//getting the rcptto from the client
+			recvData(toaddress);
+		} 
 
+	} while (toaddress.substr(0,6) == "RCPT TO"); //it's going to keep getting users and break when it's not RCPT TO
 
+	//doing this for readablility -- we can change this later
+	string data;
+	data = toaddress;
 
-
-
-
-
-	//getting a string from the client
-	recvData(fromaddress);
-
-	if (fromaddress.substr(0,9) == "MAIL FROM")//if the first word is helo
+	//checking to see if the string is DATA
+	if (data.substr(0,6) == "DATA")
 	{
-		sendData("250 OK\n");
-
-		if (fromaddress.substr(0,9) != "MAIL FROM")
-		{
-			return Status::SMTP_CMD_SNTX_ERR;
-		}
-
-	}
-
-
-	//getting a string from the client
-	recvData(data);
-
-	if (data.substr(0,6) == "DATA")//if the first word is helo
-	{
-		sendData("354 End data with <CR><LF>.<CR><LF>");
-
+		
 		if (data.substr(0,6) != "DATA")
 		{
 			return Status::SMTP_CMD_SNTX_ERR;
