@@ -27,6 +27,7 @@ class Socket
 
         //communication methods
         bool sendData(string);
+		bool sendData(int);
         bool recvData(string&);
         void closeConnection();
         string getAndSendMessage(const string&);

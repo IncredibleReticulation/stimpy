@@ -50,6 +50,11 @@ bool Socket::sendData(string s)
     return true; //return true for success
 }
 
+bool Socket::sendData(int i)
+{
+	return this -> sendData(string(s));
+}
+
 //Name: listFiles()
 //Parameters: NOT KNOWN YET
 //Purpose: This function lists all of the files that are avalible for tansfer
