@@ -7,11 +7,15 @@
 
 class ServerSocket : public Socket
 {
+   	private:
+   		vector<string> user; //holds all of the local usernames
+
     public:
         void Listen();
-        void Bind(int port);
-        void StartHosting(int port);
+        void Bind(int);
+        void StartHosting(int);
         void listFiles();
         void sendFile(string);
         void reply(string);
+        bool validateUser(string);
 };

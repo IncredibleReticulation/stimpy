@@ -13,22 +13,24 @@
 
 int main()
 {
-    //users
-    const vector<string> user; //user identifier
+    ServerSocket sockServer; //serversocket instance
     ifstream fin;
+    
     string temp;
     fin.open("users.txt");
+    
+
     while(!fin.eof())
     {
         getline(fin, temp);
-        user.pushback(temp);
+        sockServer.user.pushback(temp);//pushing the usernames into the vector
     }
 
     //variables
     int port = 8000; //port number to connect to//atoi(argv[1]); //port number to connect to
     string recMessage; //message we receive from client
 
-    ServerSocket sockServer; //serversocket instance
+    
     cout << "HOSTING...\n"; //print status message
     sockServer.StartHosting(port); //start connection using port number given
 
