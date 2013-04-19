@@ -8,7 +8,7 @@
 class ServerSocket : public Socket
 {
    	private:
-   		vector<string> user; //holds all of the local usernames
+   		vector<string> users; //holds all of the local usernames
 
     public:
         void Listen();

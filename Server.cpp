@@ -23,7 +23,7 @@ int main()
     while(!fin.eof())
     {
         getline(fin, temp);
-        sockServer.user.pushback(temp);//pushing the usernames into the vector
+        sockServer.users.pushback(temp);//pushing the usernames into the vector
     }
 
     //variables

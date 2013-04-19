@@ -164,3 +164,13 @@ void ServerSocket::reply(string s)
         sendData("\n\tError - unrecognized command...\n\tAcceptable commands are 'LIST', 'SEND', and 'QUIT'\n"); //error message
     }
 }
+
+void ServerSocket::validateUser(string user)
+{
+	bool bIsValid = false;
+	
+	for(int i = 0; i < this -> users.size(); i++)
+		if(user == users[i])
+			bIsValid = true;
+	return bIsValid;
+}
