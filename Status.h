@@ -6,6 +6,8 @@ class Status
 		static const int SMTP_SRV_RDY         = 220;
 		static const int SMTP_SRV_CLOSE       = 221;
 		static const int SMTP_ACTION_COMPLETE = 250;
+		static const int SMTP_USR_NOTLOCAL    = 251;
+		static const int SMTP_VBUTNOT_SEND    = 252;
 		static const int SMTP_BEGIN_MSG       = 354;
 		static const int SMTP_SRV_NOT_AVAIL   = 421;
 		static const int SMTP_OUT_TIMEOUT     = 447;
