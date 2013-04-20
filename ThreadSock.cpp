@@ -2,6 +2,35 @@
 
 #include "ThreadSock.h"
 
+//default constructor which will read in users from the text file and put it in the vector
+ThreadSock::ThreadSock()
+{
+    ifstream fin("users.txt"); //create file input object to read users in
+
+    if(fin.is_open()) //if the file is open, read in users
+    {
+        string temp = ""; //temp string which will hold the user before putting it into the users vector
+        getline(fin, temp); //get the first user
+
+        while(!fin.eof()) //while not at the end of file, keep reading in users
+        {
+            users.push_back(temp); //add the user to the next spot in the users vector
+
+            getline(fine, temp); //get the next user in the file
+        }
+    } else //if the file cannot open, don't access file and output an error
+    {
+        cerr << "users.txt cannot be opened...\n";
+    }
+    
+}
+
+//blank default constructor
+ThreadSock::~ThreadSock()
+{
+
+}
+
 void ThreadSock::setSock(SOCKET socket)
 {
     this -> socket = socket;

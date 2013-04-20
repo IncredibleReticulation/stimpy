@@ -5,6 +5,7 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <sstream>
+#include <fstream>
 
 using namespace std;
 
@@ -14,6 +15,8 @@ class ThreadSock{
 		vector<string> users; //holds all of the local usernames
 		
 	public:
+		ThreadSock();
+		~ThreadSock();
 		bool sendData(string);
 		bool sendData(int);
 		bool recvData(string&);

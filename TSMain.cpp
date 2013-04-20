@@ -8,7 +8,6 @@
 #include "ThreadSock.h"
 #include "Status.h"
 
-
 using namespace std;
 
 // our thread for recving commands
