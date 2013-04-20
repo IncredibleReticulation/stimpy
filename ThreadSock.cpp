@@ -52,3 +52,14 @@ int split(vector<string>* v, string s, string del)
 
     return delims + 1;          //return number of elements added to the vector
 }
+
+//This fuction will validate life.
+void ServerSocket::validateUser(string user)
+{
+    bool bIsValid = false;
+    
+    for(int i = 0; i < this -> users.size(); i++)
+        if(user == users[i])
+            bIsValid = true;
+    return bIsValid;
+}

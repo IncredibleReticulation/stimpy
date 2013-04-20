@@ -17,5 +17,4 @@ class ServerSocket : public Socket
         void listFiles();
         void sendFile(string);
         void reply(string);
-        bool validateUser(string);
 };
