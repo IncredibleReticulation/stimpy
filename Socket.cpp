@@ -52,7 +52,9 @@ bool Socket::sendData(string s)
 
 bool Socket::sendData(int i)
 {
-	return this -> sendData(string(s));
+    stringstream s;
+    s << i;
+    return this -> sendData(s.str());
 }
 
 //Name: listFiles()

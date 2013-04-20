@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sstream>
 #include "WinSock2.h"
 using namespace std;
 
