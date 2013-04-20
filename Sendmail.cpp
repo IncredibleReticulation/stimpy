@@ -4,7 +4,7 @@
 //for writing a new message
 void ServerSocket::sendMail(helostring)
 {
-
+	//variables
 	ofstream fout;
 	vector<string> recipients;
 
@@ -44,16 +44,12 @@ void ServerSocket::sendMail(helostring)
 
 	}
 
-	
 	//at this point, we are going to check for multiple recipt to
 	//Looping over the next function
 	//It keeps looping until it is not a recipt to, then breaks out
 
-	
 	//getting the rcptto from the client
 	recvData(toaddress);
-
-	
 
 	do //going to loop to add people to the vector
 	{
@@ -92,13 +88,11 @@ void ServerSocket::sendMail(helostring)
 		//if not, return an error code
 		if (data.substr(0,6) != "DATA")
 		{
+			//sending and error code back
 			sendData(Status::SMTP_CMD_SNTX_ERR);
 		}
 
 	}
-
-	//declaring the ofstream
-	ofstream fout;
 
 	//opening the file
 	fout.open ("fout.txt", ios::app);
@@ -118,6 +112,7 @@ void ServerSocket::sendMail(helostring)
 		//if they send a period, then we want to send back status number and quit
 		else
 		{
+			//sending the status code back
 			sendData(SMTP_ACTION_COMPLETE);
 			break;
 		}
