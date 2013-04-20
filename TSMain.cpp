@@ -17,7 +17,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     cout << "thread created\r\n";
 
     //set our socket to the socket passed in as a parameter
-    SOCKET current_client = (SOCKET)lpParam;
+    ThreadSock current_client = (ThreadSock)lpParam;
 
     string command = ""; //will hold the command the client sent
 

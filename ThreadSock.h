@@ -7,7 +7,11 @@
 
 using namespace std;
 
-bool sendData(SOCKET, string);
-bool recvData(SOCKET, string&);
-int split(vector<string>*, string, string);
-bool validateUser(string);
+class ThreadSock : SOCKET{
+	public:
+		bool sendData(SOCKET, string);
+		bool recvData(SOCKET, string&);
+		int split(vector<string>*, string, string);
+		bool validateUser(string);
+
+};

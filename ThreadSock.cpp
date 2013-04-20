@@ -6,7 +6,7 @@
 //Parameters: NOT KNOWN YET
 //Purpose: This function lists all of the files that are avalible for tansfer
 //Returns: NOT KNOWN YET
-bool sendData(SOCKET mySocket, string s)
+bool ThreadSock::sendData(SOCKET mySocket, string s)
 {
     const char *buffer = s.c_str();
     send(mySocket, buffer, strlen(buffer), 0);
@@ -17,7 +17,7 @@ bool sendData(SOCKET mySocket, string s)
 //Parameters: NOT KNOWN YET
 //Purpose: This function lists all of the files that are avalible for tansfer
 //Returns: NOT KNOWN YET
-bool recvData(SOCKET mySocket, string &s)
+bool ThreadSock::recvData(SOCKET mySocket, string &s)
 {
     char buffer[256];
     int i = recv(mySocket, buffer, 256, 0);
@@ -30,7 +30,7 @@ bool recvData(SOCKET mySocket, string &s)
 //Parameters: Pointer to a vector of strings, a string that needs to be split, a delimeter to split the string with.
 //Purpose: Split string according to given delimeter and add those elements to a vector.
 //Returns: Number of elements added to the vector as an int.
-int split(vector<string>* v, string s, string del)
+int ThreadSock::split(vector<string>* v, string s, string del)
 {
     //if the delimeter does not appear once, return 0 because string will not be split
     if(s.find(del) == -1)
@@ -54,7 +54,7 @@ int split(vector<string>* v, string s, string del)
 }
 
 //This fuction will validate life.
-bool validateUser(string user)
+bool ThreadSock::validateUser(string user)
 {
     for(int i = 0; i < this -> users.size(); i++)
         if(user == users[i])
