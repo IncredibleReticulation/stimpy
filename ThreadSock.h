@@ -9,10 +9,17 @@
 using namespace std;
 
 class ThreadSock : public SOCKET {
+	private:
+		SOCKET sock;
+		vector<string> users; //holds all of the local usernames
+
+		
 	public:
 		bool sendData(SOCKET, string);
 		bool recvData(SOCKET, string&);
 		int split(vector<string>*, string, string);
 		bool validateUser(string);
+		void setSock(SOCKET);
+
 
 };

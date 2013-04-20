@@ -2,14 +2,19 @@
 
 #include "ThreadSock.h"
 
+void ThreadSock::setSock(SOCKET socket)
+{
+    this -> socket = socket;
+}
+
 //Name: listFiles()
 //Parameters: NOT KNOWN YET
 //Purpose: This function lists all of the files that are avalible for tansfer
 //Returns: NOT KNOWN YET
-bool ThreadSock::sendData(SOCKET mySocket, string s)
+bool ThreadSock::sendData(string s)
 {
     const char *buffer = s.c_str();
-    send(mySocket, buffer, strlen(buffer), 0);
+    send(this -> socket, buffer, strlen(buffer), 0);
     return true; //return true for success
 }
 
@@ -17,10 +22,10 @@ bool ThreadSock::sendData(SOCKET mySocket, string s)
 //Parameters: NOT KNOWN YET
 //Purpose: This function lists all of the files that are avalible for tansfer
 //Returns: NOT KNOWN YET
-bool ThreadSock::recvData(SOCKET mySocket, string &s)
+bool ThreadSock::recvData(string &s)
 {
     char buffer[256];
-    int i = recv(mySocket, buffer, 256, 0);
+    int i = recv(this -> socket, buffer, 256, 0);
     buffer[i] = '\0';
     s = buffer;
     return true; //return true for success
@@ -57,7 +62,7 @@ int ThreadSock::split(vector<string>* v, string s, string del)
 bool ThreadSock::validateUser(string user)
 {
     for(int i = 0; i < this -> users.size(); i++)
-        if(user == users[i])
+        if(user == this -> users[i])
             return true;
 
     return false;

@@ -17,12 +17,14 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     cout << "thread created\r\n";
 
     //set our socket to the socket passed in as a parameter
-    ThreadSock current_client = (ThreadSock)lpParam;
+    ThreadSock current_client;
+
+    current_client.setSock((SOCKET)lpParam);
 
     string command = ""; //will hold the command the client sent
 
     //Set and send the welcome message
-    sendData(current_client, "Welcome to das multi-threaded server :)"); //send initiation hello
+    current_client.sendData("Welcome to das multi-threaded server :)"); //send initiation hello
 
     //our recv loop
     while(true)
@@ -35,12 +37,12 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         //checking out the string to see if it's helo
         if (helostring.substr(0,4) == "HELO")//if the first word is helo
         {
-            sendData(current_client, Status::SMTP_ACTION_COMPLETE);//send back 250 that it's good
+            current_client.sendData(Status::SMTP_ACTION_COMPLETE);//send back 250 that it's good
 
             //if it's not HELO, return error code
             if (helostring.substr(0,4) != "HELO")
             {
-                sendData(current_client, Status::SMTP_CMD_SNTX_ERR);//sending the error code
+                current_client.sendData(Status::SMTP_CMD_SNTX_ERR);//sending the error code
             }
 
         }
@@ -53,13 +55,13 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             //if it is, validate the username and continue
             if (this->validateUser(verify.substr(5)))
             {
-                sendData(current_client, Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
+                current_client.sendData(Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
             }
 
             //sending back a bad error code
             if (!this->validateUser(verify.substr(5)))
             {
-                sendData(current_client, Status::SMTP_CMD_SNTX_ERR);
+                current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
             }
 
         }
@@ -69,7 +71,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         //It keeps looping until it is not a recipt to, then breaks out
 
         //getting the rcptto from the client
-        recvData(current_client, toaddress);
+        current_client.recvData(toaddress);
 
         do //going to loop to add people to the vector
         {
@@ -77,15 +79,15 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             if (toaddress.substr(0,6) == "RCPT TO")
             {
                 //checking to see if the user is valid
-                if (this->validateUser(verify.substr(9)))
+                if (current_client.validateUser(verify.substr(9)))
                 {
-                    sendData(current_client, Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
+                    current_client.sendData(Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
                 }
 
                 //sending back a bad error code
                 else if (!this->validateUser(verify.substr(9)))
                 {
-                    sendData(current_client, Status::SMTP_CMD_SNTX_ERR);
+                    current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
                 }
 
                 //ServerSock.recipients.push_back(verify.substr(9));//putting the usernames into the vector
@@ -105,7 +107,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             //if not, return an error code
             if (data.substr(0,6) != "DATA")
             {
-                sendData(current_client, Status::SMTP_CMD_SNTX_ERR);//sending and error code back
+                current_client.sendData(Status::SMTP_CMD_SNTX_ERR);//sending and error code back
             }
 
         }
@@ -126,7 +128,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             //if they send a period, then we want to send back status number and quit
             else
             {
-                sendData(current_client, Status::SMTP_ACTION_COMPLETE);//sending the status code back
+                current_client.sendData(Status::SMTP_ACTION_COMPLETE);//sending the status code back
                 break;
             }
 
@@ -142,28 +144,28 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         // /* Put your stuff here */
         // if(command == "hello" || command == "Hello" || command == "HELLO")
         // {
-        //     sendData(current_client, "Hello little friend"); //send initial message
+        //     current_client.sendData("Hello little friend"); //send initial message
         // } else if(command == "message" || command == "Message" || command == "MESSAGE")
         // {
-        //     sendData(current_client, "Send the message..."); //tell the client it's okay to start sending the message
+        //     current_client.sendData("Send the message..."); //tell the client it's okay to start sending the message
 
         //     recvData(current_client, command);
 
         //     while(command != ".") //while the client is still sending the message, send it back to the client and get more
         //     {
-        //         sendData(current_client, command); //send the client what they sent us
+        //         current_client.sendData(command); //send the client what they sent us
 
         //         recvData(current_client, command); //get the command which is actually the message from the client
         //     }
 
-        //     sendData(current_client, "Okay I got the message"); //send to the client that we got the message okay
+        //     current_client.sendData("Okay I got the message"); //send to the client that we got the message okay
         // } else if(command == "quit" || command == "Quit" || command == "QUIT")
         // {
-        //     sendData(current_client, "quit"); //send quit because that's what they sent us
+        //     current_client.sendData("quit"); //send quit because that's what they sent us
         //     break; //break from while loop because they entered quit
         // } else
         // {
-        //     sendData(current_client, "\tError - unknown command..."); //send the client an error message bc we could not recognize command
+        //     current_client.sendData("\tError - unknown command..."); //send the client an error message bc we could not recognize command
         // }
 
     }
