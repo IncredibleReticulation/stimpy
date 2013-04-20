@@ -35,19 +35,19 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         vector<string> recipients;
 
         //checking out the string to see if it's helo
-        if (helostring.substr(0,4) == "HELO")//if the first word is helo
+        if (helostring.substr(0,4) == "HELO") //if the first word is helo
         {
-            current_client.sendData(Status::SMTP_ACTION_COMPLETE);//send back 250 that it's good
+            current_client.sendData(Status::SMTP_ACTION_COMPLETE); //send back 250 that it's good
 
             //if it's not HELO, return error code
             if (helostring.substr(0,4) != "HELO")
             {
-                current_client.sendData(Status::SMTP_CMD_SNTX_ERR);//sending the error code
+                current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending the error code
             }
 
         }
 
-        current_client.recvData(verify);//recieving the verify and a username
+        current_client.recvData(verify); //recieving the verify and a username
 
         //checking to see if it's a verify
         if (verify.substr(0,4) == "VRFY")
