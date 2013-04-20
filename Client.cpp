@@ -10,16 +10,21 @@
 #include <cstdlib>
 #include "ClientSocket.h"
 
-int main()
+int main(int argc, char * argv[])
 {
-    int port = 8000; //port number to connect to
-    string ipAddress; //ip address to connect to
+    if(argc != 3)
+    {
+        cout << "USAGE: " << argv[0] << " servername portnum (usually 25)" << endl;
+        return 1;
+    }
+
+    int port = atoi(argv[2]); //port number to connect to
+    string ipAddress = atoi(argv[1]); //ip address to connect to
     string recMessage; //message it receives
     string sendMessage; //message it sends
 
     //ask for an ip address for the client to connect to
-    cout << "Enter an IP address (127.0.0.1 is the loopback address): ";
-    cin >> ipAddress;
+    cout << "Connecting to: " << ipAddress << ":" << port << endl;
 
     ClientSocket sockClient; //clientsocket object instance
     sockClient.connectToServer(ipAddress.c_str(), port); //connect to the server using the ip and port given
