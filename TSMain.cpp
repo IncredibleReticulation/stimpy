@@ -24,37 +24,144 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     //our recv loop
     while(true)
     {
-        //get command from client
-        recvData(current_client, command);
 
-        cout << "Received:" << command << ":message" << "\n";
+        //variables
+        ofstream fout;
+        vector<string> recipients;
 
-        /* Put your stuff here */
-        if(command == "hello" || command == "Hello" || command == "HELLO")
+        //checking out the string to see if it's helo
+        if (helostring.substr(0,4) == "HELO")//if the first word is helo
         {
-            sendData(current_client, "Hello little friend"); //send initial message
-        } else if(command == "message" || command == "Message" || command == "MESSAGE")
-        {
-            sendData(current_client, "Send the message..."); //tell the client it's okay to start sending the message
+            sendData(Staus::SMTP_ACTION_COMPLETE);//send back 250 that it's good
 
-            recvData(current_client, command);
-
-            while(command != ".") //while the client is still sending the message, send it back to the client and get more
+            //if it's not HELO, return error code
+            if (helostring.substr(0,4) != "HELO")
             {
-                sendData(current_client, command); //send the client what they sent us
-
-                recvData(current_client, command); //get the command which is actually the message from the client
+                sendData(Status::SMTP_CMD_SNTX_ERR);//sending the error code
             }
 
-            sendData(current_client, "Okay I got the message"); //send to the client that we got the message okay
-        } else if(command == "quit" || command == "Quit" || command == "QUIT")
-        {
-            sendData(current_client, "quit"); //send quit because that's what they sent us
-            break; //break from while loop because they entered quit
-        } else
-        {
-            sendData(current_client, "\tError - unknown command..."); //send the client an error message bc we could not recognize command
         }
+
+        recvData(verify);//recieving the verify and a username
+
+        //checking to see if it's a verify
+        if (verify.substr(0,4) == "VRFY")
+        {
+            //if it is, validate the username and continue
+            if (this->validateUser(verify.substr(5)))
+            {
+                sendData(Staus::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
+            }
+
+            //sending back a bad error code
+            if (!this->validateUser(verify.substr(5)))
+            {
+                sendData(Status::SMTP_CMD_SNTX_ERR);
+            }
+
+        }
+
+        //at this point, we are going to check for multiple recipt to
+        //Looping over the next function
+        //It keeps looping until it is not a recipt to, then breaks out
+
+        //getting the rcptto from the client
+        recvData(toaddress);
+
+        do //going to loop to add people to the vector
+        {
+            //checking to see if it's RCPT TO
+            if (toaddress.substr(0,6) == "RCPT TO")
+            {
+                //checking to see if the user is valid
+                if (this->validateUser(verify.substr(9)))
+                {
+                    sendData(Staus::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
+                }
+
+                //sending back a bad error code
+                else if (!this->validateUser(verify.substr(9)))
+                {
+                    sendData(Status::SMTP_CMD_SNTX_ERR);
+                }
+
+                ServerSock.recipients.push_back(verify.substr(9));//putting the usernames into the vector
+
+                recvData(toaddress);//getting the rcptto from the client
+            } 
+
+        } while (toaddress.substr(0,6) == "RCPT TO"); //it's going to keep getting users and break when it's not RCPT TO
+
+        //doing this for readablility -- we can change this later
+        string data;
+        data = toaddress;
+
+        //checking to see if the string is DATA 
+        if (data.substr(0,6) == "DATA")
+        {
+            //if not, return an error code
+            if (data.substr(0,6) != "DATA")
+            {
+                sendData(Status::SMTP_CMD_SNTX_ERR);//sending and error code back
+            }
+
+        }
+
+        fout.open ("fout.txt", ios::app);//opening the file
+        
+        //while line !=. we want to keep getting input from the user
+        while (true)
+        {
+            recvData(line);//getting a line from the user
+
+            //checking to see if the line should be added
+            if (line != ".")
+            {
+                fout << line;
+            }
+            
+            //if they send a period, then we want to send back status number and quit
+            else
+            {
+                sendData(SMTP_ACTION_COMPLETE);//sending the status code back
+                break;
+            }
+
+        }
+
+        fout.close();//closing the file
+
+        // //get command from client
+        // recvData(current_client, command);
+
+        // cout << "Received:" << command << ":message" << "\n";
+
+        // /* Put your stuff here */
+        // if(command == "hello" || command == "Hello" || command == "HELLO")
+        // {
+        //     sendData(current_client, "Hello little friend"); //send initial message
+        // } else if(command == "message" || command == "Message" || command == "MESSAGE")
+        // {
+        //     sendData(current_client, "Send the message..."); //tell the client it's okay to start sending the message
+
+        //     recvData(current_client, command);
+
+        //     while(command != ".") //while the client is still sending the message, send it back to the client and get more
+        //     {
+        //         sendData(current_client, command); //send the client what they sent us
+
+        //         recvData(current_client, command); //get the command which is actually the message from the client
+        //     }
+
+        //     sendData(current_client, "Okay I got the message"); //send to the client that we got the message okay
+        // } else if(command == "quit" || command == "Quit" || command == "QUIT")
+        // {
+        //     sendData(current_client, "quit"); //send quit because that's what they sent us
+        //     break; //break from while loop because they entered quit
+        // } else
+        // {
+        //     sendData(current_client, "\tError - unknown command..."); //send the client an error message bc we could not recognize command
+        // }
 
     }
 }  
