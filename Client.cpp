@@ -33,8 +33,8 @@ int main(int argc, char * argv[])
     sockClient.recvData(recMessage);
 
     //get user login info and send to server
-    cin.ignore(1000, '\n'); //ignore needed bc of previous cin
-    sockClient.getAndSendMessage(recMessage + ": "); //get login from user and send to server
+    //cin.ignore(1000, '\n'); //ignore needed bc of previous cin
+    //sockClient.getAndSendMessage(recMessage + ": "); //get login from user and send to server
 
     //receive message
     sockClient.recvData(recMessage);
