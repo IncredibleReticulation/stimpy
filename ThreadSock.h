@@ -8,7 +8,7 @@
 
 using namespace std;
 
-class ThreadSock : SOCKET{
+class ThreadSock : public SOCKET {
 	public:
 		bool sendData(SOCKET, string);
 		bool recvData(SOCKET, string&);
