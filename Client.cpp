@@ -30,7 +30,7 @@ int main(int argc, char * argv[])
     sockClient.connectToServer(ipAddress.c_str(), port); //connect to the server using the ip and port given
 
     //receive the login prompt and enter stuff
-    sockClient.recvData(recMessage);
+    //sockClient.recvData(recMessage);
 
     //get user login info and send to server
     //cin.ignore(1000, '\n'); //ignore needed bc of previous cin
