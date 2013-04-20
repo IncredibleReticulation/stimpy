@@ -50,7 +50,7 @@ bool Socket::sendData(string s)
     return true; //return true for success
 }
 
-bool ThreadSock::sendData(int i)
+bool Socket::sendData(int i)
 {
     stringstream s;
     s << i;
