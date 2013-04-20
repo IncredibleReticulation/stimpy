@@ -24,7 +24,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     //our recv loop
     while(true)
     {
-
         //variables
         ofstream fout;
         vector<string> recipients;
@@ -32,17 +31,17 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         //checking out the string to see if it's helo
         if (helostring.substr(0,4) == "HELO")//if the first word is helo
         {
-            sendData(Staus::SMTP_ACTION_COMPLETE);//send back 250 that it's good
+            sendData(current_client, Status::SMTP_ACTION_COMPLETE);//send back 250 that it's good
 
             //if it's not HELO, return error code
             if (helostring.substr(0,4) != "HELO")
             {
-                sendData(Status::SMTP_CMD_SNTX_ERR);//sending the error code
+                sendData(current_client, Status::SMTP_CMD_SNTX_ERR);//sending the error code
             }
 
         }
 
-        recvData(verify);//recieving the verify and a username
+        recvData(current_client, verify);//recieving the verify and a username
 
         //checking to see if it's a verify
         if (verify.substr(0,4) == "VRFY")
@@ -50,13 +49,13 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             //if it is, validate the username and continue
             if (this->validateUser(verify.substr(5)))
             {
-                sendData(Staus::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
+                sendData(current_client, Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
             }
 
             //sending back a bad error code
             if (!this->validateUser(verify.substr(5)))
             {
-                sendData(Status::SMTP_CMD_SNTX_ERR);
+                sendData(current_client, Status::SMTP_CMD_SNTX_ERR);
             }
 
         }
@@ -66,7 +65,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         //It keeps looping until it is not a recipt to, then breaks out
 
         //getting the rcptto from the client
-        recvData(toaddress);
+        recvData(current_client, toaddress);
 
         do //going to loop to add people to the vector
         {
@@ -76,18 +75,18 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 //checking to see if the user is valid
                 if (this->validateUser(verify.substr(9)))
                 {
-                    sendData(Staus::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
+                    sendData(current_client, Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
                 }
 
                 //sending back a bad error code
                 else if (!this->validateUser(verify.substr(9)))
                 {
-                    sendData(Status::SMTP_CMD_SNTX_ERR);
+                    sendData(current_client, Status::SMTP_CMD_SNTX_ERR);
                 }
 
-                ServerSock.recipients.push_back(verify.substr(9));//putting the usernames into the vector
+                //ServerSock.recipients.push_back(verify.substr(9));//putting the usernames into the vector
 
-                recvData(toaddress);//getting the rcptto from the client
+                recvData(current_client, toaddress);//getting the rcptto from the client
             } 
 
         } while (toaddress.substr(0,6) == "RCPT TO"); //it's going to keep getting users and break when it's not RCPT TO
@@ -102,7 +101,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             //if not, return an error code
             if (data.substr(0,6) != "DATA")
             {
-                sendData(Status::SMTP_CMD_SNTX_ERR);//sending and error code back
+                sendData(current_client, Status::SMTP_CMD_SNTX_ERR);//sending and error code back
             }
 
         }
@@ -112,18 +111,18 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         //while line !=. we want to keep getting input from the user
         while (true)
         {
-            recvData(line);//getting a line from the user
+            recvData(current_client, line);//getting a line from the user
 
             //checking to see if the line should be added
             if (line != ".")
             {
-                fout << line;
+                fout << line << endl;
             }
             
             //if they send a period, then we want to send back status number and quit
             else
             {
-                sendData(SMTP_ACTION_COMPLETE);//sending the status code back
+                sendData(current_client, Status::SMTP_ACTION_COMPLETE);//sending the status code back
                 break;
             }
 
