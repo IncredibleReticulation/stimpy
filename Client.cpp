@@ -19,7 +19,7 @@ int main(int argc, char * argv[])
     }
 
     int port = atoi(argv[2]); //port number to connect to
-    string ipAddress = atoi(argv[1]); //ip address to connect to
+    string ipAddress = string(argv[1]); //ip address to connect to
     string recMessage; //message it receives
     string sendMessage; //message it sends
 
