@@ -4,8 +4,10 @@
 #include <iostream>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <fstream>
 #include "ThreadSock.h"
 #include "Status.h"
+
 
 using namespace std;
 
