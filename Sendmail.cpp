@@ -86,35 +86,42 @@ void ServerSocket::sendMail(helostring)
 	string data;
 	data = toaddress;
 
-	//checking to see if the string is DATA
+	//checking to see if the string is DATA 
 	if (data.substr(0,6) == "DATA")
 	{
-		
+		//if not, return an error code
 		if (data.substr(0,6) != "DATA")
 		{
-			return Status::SMTP_CMD_SNTX_ERR;
+			sendData(Status::SMTP_CMD_SNTX_ERR);
 		}
 
 	}
 
+	//declaring the ofstream
+	ofstream fout;
+
+	//opening the file
+	fout.open ("fout.txt", ios::app);
+	
 	//while line !=. we want to keep getting input from the user
 	while (true)
 	{
-		
 		//getting a line from the user
 		recvData(line);
 
-		//checking to see if it should break
-		if (line == ".")
+		//checking to see if the line should be added
+		if (line != ".")
 		{
-			sendData("250 Ok: queued as PUT THREAD HERE!!!!!!");
-			//close the connection and return the stmp code and break
+			fout << line;
+		}
+		
+		//if they send a period, then we want to send back status number and quit
+		else
+		{
+			sendData(SMTP_ACTION_COMPLETE);
+			break;
 		}
 
-
-		fout.open ("emailfile.txt", ios::app);
-		fout << line;
-		
 	}
 
 	//closing the file
