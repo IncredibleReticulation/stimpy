@@ -8,7 +8,7 @@
 
 using namespace std;
 
-class ThreadSock : public SOCKET {
+class ThreadSock{
 	private:
 		SOCKET sock;
 		vector<string> users; //holds all of the local usernames
