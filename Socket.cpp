@@ -50,9 +50,11 @@ bool Socket::sendData(string s)
     return true; //return true for success
 }
 
-bool Socket::sendData(int i)
+bool ThreadSock::sendData(int i)
 {
-	return this -> sendData(string(s));
+    stringstream s;
+    s << i;
+    return this -> sendData(s.str());
 }
 
 //Name: listFiles()
