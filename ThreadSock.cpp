@@ -16,7 +16,7 @@ ThreadSock::ThreadSock()
         {
             users.push_back(temp); //add the user to the next spot in the users vector
 
-            getline(fine, temp); //get the next user in the file
+            getline(fin, temp); //get the next user in the file
         }
     } else //if the file cannot open, don't access file and output an error
     {
