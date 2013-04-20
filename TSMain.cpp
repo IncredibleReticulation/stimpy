@@ -47,7 +47,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
         }
 
-        recvData(current_client, verify);//recieving the verify and a username
+        current_client.recvData(verify);//recieving the verify and a username
 
         //checking to see if it's a verify
         if (verify.substr(0,4) == "VRFY")
@@ -92,7 +92,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                 //ServerSock.recipients.push_back(verify.substr(9));//putting the usernames into the vector
 
-                recvData(current_client, toaddress);//getting the rcptto from the client
+                current_client.recvData(toaddress);//getting the rcptto from the client
             } 
 
         } while (toaddress.substr(0,6) == "RCPT TO"); //it's going to keep getting users and break when it's not RCPT TO
@@ -117,7 +117,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         //while line !=. we want to keep getting input from the user
         while (true)
         {
-            recvData(current_client, line);//getting a line from the user
+            current_client.recvData(line);//getting a line from the user
 
             //checking to see if the line should be added
             if (line != ".")
