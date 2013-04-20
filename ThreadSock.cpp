@@ -54,7 +54,7 @@ int split(vector<string>* v, string s, string del)
 }
 
 //This fuction will validate life.
-void ServerSocket::validateUser(string user)
+void validateUser(string user)
 {
     bool bIsValid = false;
     
