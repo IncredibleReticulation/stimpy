@@ -30,7 +30,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     while(true)
     {
         //variables
-        string helostring, verify, toaddress, line, data;
+        string helostring, verify, toaddress, line;
         ofstream fout;
         vector<string> recipients;
 
