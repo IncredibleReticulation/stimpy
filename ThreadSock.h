@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 #include <winsock2.h>
-//#include "WinSock2.h"
 #include <ws2tcpip.h>
 #include <windows.h>
 
@@ -12,7 +11,6 @@ class ThreadSock{
 	private:
 		SOCKET sock;
 		vector<string> users; //holds all of the local usernames
-
 		
 	public:
 		bool sendData(string);
@@ -21,6 +19,4 @@ class ThreadSock{
 		int split(vector<string>*, string, string);
 		bool validateUser(string);
 		void setSock(SOCKET);
-
-
 };
