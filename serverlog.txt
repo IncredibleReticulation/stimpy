@@ -1,24 +1,29 @@
 tsmain.cpp: In function 'DWORD handleMail(LPVOID)':
-tsmain.cpp:28:18: error: aggregate 'std::ofstream fout' has incomplete type and cannot be defined
-tsmain.cpp:32:13: error: 'helostring' was not declared in this scope
-tsmain.cpp:34:38: error: 'Status' has not been declared
-tsmain.cpp:39:42: error: 'Status' has not been declared
-tsmain.cpp:44:34: error: 'verify' was not declared in this scope
-tsmain.cpp:50:17: error: invalid use of 'this' in non-member function
-tsmain.cpp:52:42: error: 'Status' has not been declared
-tsmain.cpp:56:18: error: invalid use of 'this' in non-member function
-tsmain.cpp:58:42: error: 'Status' has not been declared
-tsmain.cpp:68:34: error: 'toaddress' was not declared in this scope
-tsmain.cpp:76:21: error: invalid use of 'this' in non-member function
-tsmain.cpp:78:46: error: 'Status' has not been declared
-tsmain.cpp:82:27: error: invalid use of 'this' in non-member function
-tsmain.cpp:84:46: error: 'Status' has not been declared
-tsmain.cpp:104:42: error: 'Status' has not been declared
-tsmain.cpp:114:38: error: 'line' was not declared in this scope
-tsmain.cpp:125:42: error: 'Status' has not been declared
-threadsock.cpp: In function 'void validateUser(std::string)':
-threadsock.cpp:57:30: error: new declaration 'void validateUser(std::string)'
-ThreadSock.h:13:6: error: ambiguates old declaration 'bool validateUser(std::string)'
-threadsock.cpp:61:24: error: invalid use of 'this' in non-member function
-threadsock.cpp:62:20: error: 'users' was not declared in this scope
-threadsock.cpp:64:12: error: return-statement with a value, in function returning 'void' [-fpermissive]
+tsmain.cpp:29:18: error: aggregate 'std::ofstream fout' has incomplete type and cannot be defined
+tsmain.cpp:33:13: error: 'helostring' was not declared in this scope
+tsmain.cpp:35:66: error: invalid conversion from 'int' to 'const char*' [-fpermissive]
+c:\mingw\bin\../lib/gcc/mingw32/4.6.2/include/c++/bits/basic_string.tcc:214:5: error:   initializing argument 1 of 'std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, const _Alloc&) [with _CharT = char, _Traits = std::char_traits<char>, _Alloc = std::allocator<char>]' [-fpermissive]
+tsmain.cpp:40:67: error: invalid conversion from 'int' to 'const char*' [-fpermissive]
+c:\mingw\bin\../lib/gcc/mingw32/4.6.2/include/c++/bits/basic_string.tcc:214:5: error:   initializing argument 1 of 'std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, const _Alloc&) [with _CharT = char, _Traits = std::char_traits<char>, _Alloc = std::allocator<char>]' [-fpermissive]
+tsmain.cpp:45:34: error: 'verify' was not declared in this scope
+tsmain.cpp:51:17: error: invalid use of 'this' in non-member function
+tsmain.cpp:53:70: error: invalid conversion from 'int' to 'const char*' [-fpermissive]
+c:\mingw\bin\../lib/gcc/mingw32/4.6.2/include/c++/bits/basic_string.tcc:214:5: error:   initializing argument 1 of 'std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, const _Alloc&) [with _CharT = char, _Traits = std::char_traits<char>, _Alloc = std::allocator<char>]' [-fpermissive]
+tsmain.cpp:57:18: error: invalid use of 'this' in non-member function
+tsmain.cpp:59:67: error: invalid conversion from 'int' to 'const char*' [-fpermissive]
+c:\mingw\bin\../lib/gcc/mingw32/4.6.2/include/c++/bits/basic_string.tcc:214:5: error:   initializing argument 1 of 'std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, const _Alloc&) [with _CharT = char, _Traits = std::char_traits<char>, _Alloc = std::allocator<char>]' [-fpermissive]
+tsmain.cpp:69:34: error: 'toaddress' was not declared in this scope
+tsmain.cpp:77:21: error: invalid use of 'this' in non-member function
+tsmain.cpp:79:74: error: invalid conversion from 'int' to 'const char*' [-fpermissive]
+c:\mingw\bin\../lib/gcc/mingw32/4.6.2/include/c++/bits/basic_string.tcc:214:5: error:   initializing argument 1 of 'std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, const _Alloc&) [with _CharT = char, _Traits = std::char_traits<char>, _Alloc = std::allocator<char>]' [-fpermissive]
+tsmain.cpp:83:27: error: invalid use of 'this' in non-member function
+tsmain.cpp:85:71: error: invalid conversion from 'int' to 'const char*' [-fpermissive]
+c:\mingw\bin\../lib/gcc/mingw32/4.6.2/include/c++/bits/basic_string.tcc:214:5: error:   initializing argument 1 of 'std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, const _Alloc&) [with _CharT = char, _Traits = std::char_traits<char>, _Alloc = std::allocator<char>]' [-fpermissive]
+tsmain.cpp:105:67: error: invalid conversion from 'int' to 'const char*' [-fpermissive]
+c:\mingw\bin\../lib/gcc/mingw32/4.6.2/include/c++/bits/basic_string.tcc:214:5: error:   initializing argument 1 of 'std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, const _Alloc&) [with _CharT = char, _Traits = std::char_traits<char>, _Alloc = std::allocator<char>]' [-fpermissive]
+tsmain.cpp:115:38: error: 'line' was not declared in this scope
+tsmain.cpp:126:70: error: invalid conversion from 'int' to 'const char*' [-fpermissive]
+c:\mingw\bin\../lib/gcc/mingw32/4.6.2/include/c++/bits/basic_string.tcc:214:5: error:   initializing argument 1 of 'std::basic_string<_CharT, _Traits, _Alloc>::basic_string(const _CharT*, const _Alloc&) [with _CharT = char, _Traits = std::char_traits<char>, _Alloc = std::allocator<char>]' [-fpermissive]
+threadsock.cpp: In function 'bool validateUser(std::string)':
+threadsock.cpp:59:24: error: invalid use of 'this' in non-member function
+threadsock.cpp:60:20: error: 'users' was not declared in this scope
