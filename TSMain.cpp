@@ -23,7 +23,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     string command = ""; //will hold the command the client sent
 
     //Set and send the welcome message
-    current_client.sendData("Welcome to das multi-threaded server :)"); //send initiation hello
+    current_client.sendData(Status::SMTP_SRV_RDY); //send initiation hello
 
     //our recv loop
     while(true)
