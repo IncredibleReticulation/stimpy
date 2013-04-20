@@ -5,6 +5,7 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <sstream>
+#include <iostream>
 #include <fstream>
 
 using namespace std;
