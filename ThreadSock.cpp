@@ -54,12 +54,11 @@ int split(vector<string>* v, string s, string del)
 }
 
 //This fuction will validate life.
-void validateUser(string user)
+bool validateUser(string user)
 {
-    bool bIsValid = false;
-    
     for(int i = 0; i < this -> users.size(); i++)
         if(user == users[i])
-            bIsValid = true;
-    return bIsValid;
+            return true;
+
+    return false;
 }
