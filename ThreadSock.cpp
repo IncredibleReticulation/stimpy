@@ -20,7 +20,9 @@ bool ThreadSock::sendData(string s)
 
 bool ThreadSock::sendData(int i)
 {
-    return this -> sendData(stri(itoa(i)));
+    stringstream s;
+    s << i;
+    return this -> sendData(s.str());
 }
 
 //Name: listFiles()
