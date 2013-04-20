@@ -89,7 +89,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
                 }
 
-                recipients.push_back(verify.substr(9), verify.length()-10);//putting the usernames into the vector
+                recipients.push_back(verify.substr(9, verify.length()-10));//putting the usernames into the vector
 
                 current_client.recvData(toaddress);//getting the rcptto from the client
             }
