@@ -16,6 +16,7 @@ class ThreadSock : public SOCKET {
 		
 	public:
 		bool sendData(string);
+		bool sendData(int);
 		bool recvData(string&);
 		int split(vector<string>*, string, string);
 		bool validateUser(string);
