@@ -49,7 +49,7 @@ int main(int argc, char * argv[])
     {
         string username;
         cout << "Username: ";
-        getline(username);
+        getline(cin, username);
         sendMessage = "VRFY " + username;
         sockClient.sendData(sendMessage);
     }
