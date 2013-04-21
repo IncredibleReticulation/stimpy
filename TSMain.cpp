@@ -62,7 +62,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             //sending back a bad error code
             if (!current_client.validateUser(recMessage.substr(5)))
             {
-                current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
+                current_client.sendData(Status::SMTP_MBOX_UNAV);
             }
 
         }
