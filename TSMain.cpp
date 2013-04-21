@@ -5,6 +5,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <fstream>
+#include <cctype>
 #include "ThreadSock.h"
 #include "Status.h"
 
