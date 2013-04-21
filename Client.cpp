@@ -57,42 +57,41 @@ int main(int argc, char * argv[])
 
     if(recMessage == "550" || recMessage == "500")
     {
-        cout << "Invalid user" << endl;
+        cout << "Invalid user...\n";
         return 1;
     }
     else if(recMessage == "250")
     {
-        cout << "Logon successful." << endl;
+        cout << "Logon successful.\n";
     }
-    return 0;
 
     bool done = false; //boolean for if the client is done communicating with the server or not
 
     //if the server replies with welcome, we can start sharin filez
-    if(recMessage == "WELCOME")
-    {
-        sendMessage = sockClient.getAndSendMessage("Server>"); //prompt user for input and send to server
+    // if(recMessage == "WELCOME")
+    // {
+    //     sendMessage = sockClient.getAndSendMessage("Server>"); //prompt user for input and send to server
 
-        while(sendMessage != "QUIT") //while not done
-        {
-            vector<string> v; //vector to hold the split string
-            sockClient.split(&v, sendMessage, " "); //split the sent message so we can compare its elements
+    //     while(sendMessage != "QUIT") //while not done
+    //     {
+    //         vector<string> v; //vector to hold the split string
+    //         sockClient.split(&v, sendMessage, " "); //split the sent message so we can compare its elements
 
-            if(v[0] == "LIST")
-            {
-                sockClient.listFiles(); //list the files from the server
-            } else if(v[0] == "SEND") //if the client used the send command, get the file
-            {
-                sockClient.getFile(); //gets the file from the server and writes it locally
-            } else //if they didn't choose to send
-            {
-                sockClient.recvData(recMessage); //receive the command
-                cout << recMessage << endl; //print reply from server
-            }
+    //         if(v[0] == "LIST")
+    //         {
+    //             sockClient.listFiles(); //list the files from the server
+    //         } else if(v[0] == "SEND") //if the client used the send command, get the file
+    //         {
+    //             sockClient.getFile(); //gets the file from the server and writes it locally
+    //         } else //if they didn't choose to send
+    //         {
+    //             sockClient.recvData(recMessage); //receive the command
+    //             cout << recMessage << endl; //print reply from server
+    //         }
 
-            sendMessage = sockClient.getAndSendMessage("Server>"); //prompt user for input and send to server
-        }
-    }
+    //         sendMessage = sockClient.getAndSendMessage("Server>"); //prompt user for input and send to server
+    //     }
+    // }
 
     //close the connection
     sockClient.closeConnection();

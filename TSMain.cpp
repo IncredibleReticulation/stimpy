@@ -31,152 +31,109 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
     current_client.recvData(recMessage); //get data from the client
 
-    //our recv loop
-    while(true)
+    //checking out the string to see if it's helo
+    if (recMessage.substr(0,4) == "HELO") //if the first word is helo
     {
-        //variables
-        string helostring, verify, toaddress, line, username;
-        ofstream fout;
-        vector<string> recipients;
+        current_client.sendData(Status::SMTP_ACTION_COMPLETE); //send back 250 that it's good
+        cout << "connection successful. we got a HELO from the client\n";
 
-        //checking out the string to see if it's helo
-        if (recMessage.substr(0,4) == "HELO") //if the first word is helo
-        {
-            current_client.sendData(Status::SMTP_ACTION_COMPLETE); //send back 250 that it's good
-            cout << "connection successful. we got a HELO from the client\n";
+    }    
+    else //if it's not HELO, return error code
+    {
+        current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending the error code
+        cout << "we didn't get HELO from client...\n";
+    }
 
-        }    
-        else //if it's not HELO, return error code
+    current_client.recvData(recMessage); //recieving the verify and a username
+
+    //checking to see if it's a verify
+    if (recMessage.substr(0,4) == "VRFY")
+    {
+        string username = trim(recMessage.substr(5)); //trim the username
+
+        //if it is, validate the username and continue
+        if (current_client.validateUser(username))
         {
-            current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending the error code
-            cout << "we didn't get HELO from client...\n";
+            current_client.sendData(Status::SMTP_ACTION_COMPLETE); //if the username was valid, send back 250
         }
 
-        current_client.recvData(recMessage); //recieving the verify and a username
-
-        //checking to see if it's a verify
-        if (recMessage.substr(0,4) == "VRFY")
+        //sending back a bad error code
+        if (!current_client.validateUser(username))
         {
-            username = trim(recMessage.substr(5)); //trim the username
-
-            //if it is, validate the username and continue
-            if (current_client.validateUser(username))
-            {
-                current_client.sendData(Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
-            }
-
-            //sending back a bad error code
-            if (!current_client.validateUser(username))
-            {
-                current_client.sendData(Status::SMTP_MBOX_UNAV);
-            }
-
+            current_client.sendData(Status::SMTP_MBOX_UNAV);
         }
+    }
 
+    //getting data from the client
+    current_client.recvData(recMessage);
+
+    //our recv loop
+    while(recMessage != "QUIT" || recMessage != "Quit" || recMessage != "quit")
+    {
         //at this point, we are going to check for multiple recipt to
         //Looping over the next function
         //It keeps looping until it is not a recipt to, then breaks out
 
-        //getting the rcptto from the client
-        current_client.recvData(toaddress);
+        vector<string> recipients; //vector of recipients
 
         do //going to loop to add people to the vector
         {
-            //checking to see if it's RCPT TO
-            if (toaddress.substr(0,6) == "RCPT TO")
+            if (recMessage.substr(0,6) == "RCPT TO") //checking to see if it's RCPT TO
             {
                 //checking to see if the user is valid
-                if (current_client.validateUser(verify.substr(9)))
+                if (current_client.validateUser(recMessage.substr(9)))
                 {
                     current_client.sendData(Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
                 }
 
                 //sending back a bad error code
-                else if (!current_client.validateUser(verify.substr(9)))
+                else if (!current_client.validateUser(recMessage.substr(9)))
                 {
                     current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
                 }
 
-                recipients.push_back(verify.substr(9, verify.length()-10));//putting the usernames into the vector
+                recipients.push_back(recMessage.substr(9, recMessage.length()-10));//putting the usernames into the vector
 
-                current_client.recvData(toaddress);//getting the rcptto from the client
+                current_client.recvData(recMessage);//getting the rcptto from the client
             }
+        } while (recMessage.substr(0,6) == "RCPT TO"); //it's going to keep getting users and break when it's not RCPT TO
 
-        } while (toaddress.substr(0,6) == "RCPT TO"); //it's going to keep getting users and break when it's not RCPT TO
-
-        //doing this for readablility -- we can change this later
-        string data;
-        data = toaddress;
 
         //checking to see if the string is DATA 
-        if (data.substr(0,6) == "DATA")
+        if (recMessage.substr(0,6) == "DATA")
         {
             //if not, return an error code
-            if (data.substr(0,6) != "DATA")
+            if (recMessage.substr(0,6) != "DATA")
             {
                 current_client.sendData(Status::SMTP_CMD_SNTX_ERR);//sending and error code back
             }
 
         }
 
-        fout.open ("fout.txt", ios::app);//opening the file
+        //create file output object and open it in append mode
+        ofstream fout;
+        fout.open ("fout.txt", ios::app);
         
-        //while line !=. we want to keep getting input from the user
-        while (true)
+        current_client.recvData(recMessage); //getting a line from the user
+
+        while (recMessage != ".") //while line !=. we want to keep getting input from the user
         {
-            current_client.recvData(line);//getting a line from the user
+            fout << recMessage; //write line to file
 
-            //checking to see if the line should be added
-            if (line != ".")
-            {
-                fout << line << endl;
-            }
-            
-            //if they send a period, then we want to send back status number and quit
-            else
-            {
-                current_client.sendData(Status::SMTP_ACTION_COMPLETE);//sending the status code back
-                break;
-            }
-
+            current_client.recvData(recMessage); //getting next line from the user
         }
 
-        fout.close();//closing the file
+        //send status code that action is complete and close the file
+        current_client.sendData(Status::SMTP_ACTION_COMPLETE);
+        fout.close();
 
-        // //get command from client
-        // recvData(current_client, command);
+        //get data from the client before starting loop again
+        current_client.recvData(recMessage);
 
-        // cout << "Received:" << command << ":message" << "\n";
-
-        // /* Put your stuff here */
-        // if(command == "hello" || command == "Hello" || command == "HELLO")
-        // {
-        //     current_client.sendData("Hello little friend"); //send initial message
-        // } else if(command == "message" || command == "Message" || command == "MESSAGE")
-        // {
-        //     current_client.sendData("Send the message..."); //tell the client it's okay to start sending the message
-
-        //     recvData(current_client, command);
-
-        //     while(command != ".") //while the client is still sending the message, send it back to the client and get more
-        //     {
-        //         current_client.sendData(command); //send the client what they sent us
-
-        //         recvData(current_client, command); //get the command which is actually the message from the client
-        //     }
-
-        //     current_client.sendData("Okay I got the message"); //send to the client that we got the message okay
-        // } else if(command == "quit" || command == "Quit" || command == "QUIT")
-        // {
-        //     current_client.sendData("quit"); //send quit because that's what they sent us
-        //     break; //break from while loop because they entered quit
-        // } else
-        // {
-        //     current_client.sendData("\tError - unknown command..."); //send the client an error message bc we could not recognize command
-        // }
-
+        if(recMessage == "QUIT") //if they sent quit, break from while loop and the thread will end after exiting this
+            break;
     }
-}  
+}
  
 int main()
 {
