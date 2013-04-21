@@ -53,13 +53,13 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         if (verify.substr(0,4) == "VRFY")
         {
             //if it is, validate the username and continue
-            if (this->validateUser(verify.substr(5)))
+            if (current_client.validateUser(verify.substr(5)))
             {
                 current_client.sendData(Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
             }
 
             //sending back a bad error code
-            if (!this->validateUser(verify.substr(5)))
+            if (!current_client.validateUser(verify.substr(5)))
             {
                 current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
             }
@@ -85,7 +85,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 }
 
                 //sending back a bad error code
-                else if (!this->validateUser(verify.substr(9)))
+                else if (!current_client.validateUser(verify.substr(9)))
                 {
                     current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
                 }
