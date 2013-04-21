@@ -37,8 +37,34 @@ int main(int argc, char * argv[])
     //sockClient.getAndSendMessage(recMessage + ": "); //get login from user and send to server
 
     //receive message
+    
     sockClient.recvData(recMessage);
-    cout << recMessage << endl;
+    if(recMessage.substr(0,3) == "220")
+    {
+        sockClient.sendData("HELO 127.0.0.1");
+    }
+
+    sockClient.recvData(recMessage);
+    if(recMessage.substr(0,3) == "250")
+    {
+        string username;
+        cout << "Username: ";
+        getline(username);
+        sendMessage = "VRFY " + username;
+        sockClient.sendData(sendMessage);
+    }
+    sockClient.recvData(recMessage);
+    if(recMessage == "550")
+    {
+        cout << "Invalid user" << endl;
+        return 1;
+    }
+    else if(recMessage == "250")
+    {
+        cout << "Logon successful." << endl;
+    }
+    return 0;
+
     bool done = false; //boolean for if the client is done communicating with the server or not
 
     //if the server replies with welcome, we can start sharin filez
