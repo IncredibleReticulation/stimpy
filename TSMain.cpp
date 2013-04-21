@@ -20,10 +20,12 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
     current_client.setSock((SOCKET)lpParam);
 
-    string command = ""; //will hold the command the client sent
+    string recMessage = ""; //will hold the command the client sent
 
     //Set and send the welcome message
     current_client.sendData(Status::SMTP_SRV_RDY); //send initiation hello
+
+    current_client.recvData(recMessage); //get data from the client
 
     //our recv loop
     while(true)
@@ -34,31 +36,31 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         vector<string> recipients;
 
         //checking out the string to see if it's helo
-        if (helostring.substr(0,4) == "HELO") //if the first word is helo
+        if (recMessage.substr(0,4) == "HELO") //if the first word is helo
         {
             current_client.sendData(Status::SMTP_ACTION_COMPLETE); //send back 250 that it's good
+            cout << "connection successful. we got a HELO from the client\n";
 
-            //if it's not HELO, return error code
-            if (helostring.substr(0,4) != "HELO")
-            {
-                current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending the error code
-            }
-
+        }    
+        else //if it's not HELO, return error code
+        {
+            current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending the error code
+            cout << "we didn't get HELO from client...\n";
         }
 
-        current_client.recvData(verify); //recieving the verify and a username
+        current_client.recvData(recMessage); //recieving the verify and a username
 
         //checking to see if it's a verify
-        if (verify.substr(0,4) == "VRFY")
+        if (recMessage.substr(0,4) == "VRFY")
         {
             //if it is, validate the username and continue
-            if (current_client.validateUser(verify.substr(5)))
+            if (current_client.validateUser(recMessage.substr(5)))
             {
                 current_client.sendData(Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
             }
 
             //sending back a bad error code
-            if (!current_client.validateUser(verify.substr(5)))
+            if (!current_client.validateUser(recMessage.substr(5)))
             {
                 current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
             }
