@@ -54,7 +54,8 @@ int main(int argc, char * argv[])
         sockClient.sendData(sendMessage);
     }
     sockClient.recvData(recMessage);
-    if(recMessage == "550")
+
+    if(recMessage == "550" || recMessage == "500")
     {
         cout << "Invalid user" << endl;
         return 1;
