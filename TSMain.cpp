@@ -10,6 +10,9 @@
 
 using namespace std;
 
+//prototype for the trim function
+string trim(string);
+
 // our thread for recving commands
 DWORD WINAPI handleMail(LPVOID lpParam)
 {
@@ -31,7 +34,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     while(true)
     {
         //variables
-        string helostring, verify, toaddress, line;
+        string helostring, verify, toaddress, line, username;
         ofstream fout;
         vector<string> recipients;
 
@@ -53,14 +56,15 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         //checking to see if it's a verify
         if (recMessage.substr(0,4) == "VRFY")
         {
+            username = trim(recMessage);
             //if it is, validate the username and continue
-            if (current_client.validateUser(recMessage.substr(5)))
+            if (current_client.validateUser(username.substr(5)))
             {
                 current_client.sendData(Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
             }
 
             //sending back a bad error code
-            if (!current_client.validateUser(recMessage.substr(5)))
+            if (!current_client.validateUser(username.substr(5)))
             {
                 current_client.sendData(Status::SMTP_MBOX_UNAV);
             }
@@ -236,4 +240,24 @@ int main()
     WSACleanup(); //windows cleanup
 
     return 0; //ends program
+}
+
+string trim(string s)
+{
+    //if the first thing is a space, erase it until it is longer a space.
+    while(isspace(s[0]))
+    {
+        s.erase(0, 1); //remove the first index because it is a space
+    }
+
+    int length = s.length(); //holds length of string after removing leading white space
+
+    //if the last char of the string is a space, remove it until it is no longer a space
+    while(isspace(s[length-1]))
+    {
+        s.erase(length-1, 1); //remove that char because it is a space
+        length--; //decrement length by one because when a char is erased, length decreases by 1
+    }
+
+    return s; //return the final string
 }
