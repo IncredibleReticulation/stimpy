@@ -75,39 +75,39 @@ int main(int argc, char * argv[])
         switch(option)
         {
             case 1: //option 1, to send an email
+                //send who the mail is from and receive response
                 sendMessage = "MAIL FROM:<" + username + "@" + ipAddress + ">"; //set what we're sending
                 sockClient.sendData(sendMessage); //send to the server that we're sending mail
                 sockClient.recvData(recMessage); //get the response
 
-                //check if there was an error
-                if(atoi(recMessage) != Status::SMTP_ACTION_COMPLETE)
-                {
-                    cerr << "Something went wrong. Please try again.\n"; //error message
-                    break; //get out of the case
-                }
+                //check for an error
+                if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                    break; //break if we found one
 
+                //get recipient of the email
                 string recipient; //will hold the recipient
                 cout << "Enter the recipient email address:"; //prompts for recipient
                 cin >> recipient; //get the recipient
 
+                //send recipient of the email
                 sendMessage = "RCPT TO:<" + recipient + ">"; //set what we're sending
                 sockClient.sendData(sendMessage); //send data
                 sockClient.recvData(recMessage); //get response
-                if(atoi(recMessage) != Status::SMTP_ACTION_COMPLETE)
-                {
-                    cerr << "Something went wrong. Please try again.\n"; //error message
-                    break; //get out of the case
-                }
 
+                //check for an error
+                if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                    break; //break if we found one
+
+                //send data to the server and get a response
                 sockClient.sendData("DATA"); //send that we're ready to send data
                 sockClient.recvData(recMessage); //get the response
-                if(atoi(recMessage) != Status::SMTP_BEGIN_MSG)
-                {
-                    cerr << "Something went wrong. Please try again.\n"; //error message
-                    break; //get out of the case
-                }
-                cout << "Enter data. Press '.' when the message is over.\nData > "; //prompt for data
 
+                //check for an error
+                if(!sockClient.checkError(recMessage), Status::SMTP_BEGIN_MSG)
+                    break; //break if we found one
+
+                //get data from client and send it over
+                cout << "Enter data. Press '.' when the message is over.\nData > "; //prompt for data
                 cin.ignore(10000, '\n'); //ignore any newlines
                 getline(cin, sendMessage); //get the message to send
                 
@@ -119,7 +119,10 @@ int main(int argc, char * argv[])
                     getline(cin, sendMessage); //get the message to send
                 }
 
-                sockClient.recvData(recMessage); //get response
+                //get response after sending data
+                sockClient.recvData(recMessage);
+
+                //check for an error
                 if(atoi(recMessage) == Status::SMTP_ACTION_COMPLETE)
                     cout << "Message sent successfully! :)\n\n";
                 else
