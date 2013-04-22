@@ -1,10 +1,5 @@
 #define _WIN32_WINNT 0x501
-#include <windows.h>
 #include <cstdlib>
-//#include <iostream>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <fstream>
 #include <cctype>
 #include "ThreadSock.h"
 #include "Status.h"
