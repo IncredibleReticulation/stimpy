@@ -176,7 +176,7 @@ int main()
     //fill in winsock struct ...
     server.sin_family=AF_INET;
     server.sin_addr.s_addr=INADDR_ANY;
-    server.sin_port=htons(0); //listen on telnet port 31000
+    server.sin_port=htons(31000); //listen on telnet port 31000
 
     //create our socket
     sock=socket(AF_INET,SOCK_STREAM,0);
