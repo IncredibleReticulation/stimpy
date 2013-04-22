@@ -22,22 +22,27 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     string recMessage = ""; //will hold the command the client sent
 
     //Set and send the welcome message
-    current_client.sendData(Status::SMTP_SRV_RDY); //send initiation hello
+    current_client.sendResponse(Status::SMTP_SRV_RDY, "stimpy 0.0.1/flopcity - Welcome"); //send initiation hello
 
     current_client.recvData(recMessage); //get data from the client
 
     //checking out the string to see if it's helo
-    if (recMessage.substr(0,4) == "HELO") //if the first word is helo
-    {
-        current_client.sendData(Status::SMTP_ACTION_COMPLETE); //send back 250 that it's good
-        cout << "Connection Successful. We received a HELO from the client.\n";
+	bool bHeloSent = FALSE;
+	do{
+		if (recMessage.substr(0,4) == "HELO") //if the first word is helo
+		{
+			current_client.sendData(Status::SMTP_ACTION_COMPLETE); //send back 250 that it's good
+			cout << "Connection Successful. We received a HELO from the client.\n";
+			bHeloSent = TRUE;
 
-    }    
-    else //if it's not HELO, return error code
-    {
-        current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending the error code
-        cout << "Connection Failed. We did not recieive a HELO from client...\n";
-    }
+		}    
+		else //if it's not HELO, return error code
+		{
+			current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending the error code
+			cout << "Connection Failed. We did not recieive a HELO from client...\n";
+			current_client.recvData(recMessage); //get data from the client
+		}
+	} while (!bHeloSent);
 
     current_client.recvData(recMessage); //recieving the verify and a username
 
@@ -65,43 +70,49 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     //our recv loop
     while(recMessage != "QUIT" || recMessage != "Quit" || recMessage != "quit")
     {
-        //at this point, we are going to check for multiple recipt to
-        //Looping over the next function
-        //It keeps looping until it is not a recipt to, then breaks out
+		bool bRecipientSent = FALSE;
+		string sRecipient = "";
 
-        vector<string> recipients; //vector of recipients
+		if (recMessage.substr(0,6) == "RCPT TO") //checking to see if it's RCPT TO
+		{
+			//checking to see if the user is valid
+			if (current_client.validateUser(recMessage.substr(9)))
+			{
+				current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "ok");//if the username was valid, send back 250
+				bRecipientSent = TRUE;
+				sRecipient = recMessage.substr(9);
+			}
 
-        do //going to loop to add people to the vector
-        {
-            if (recMessage.substr(0,6) == "RCPT TO") //checking to see if it's RCPT TO
-            {
-                //checking to see if the user is valid
-                if (current_client.validateUser(recMessage.substr(9)))
-                {
-                    current_client.sendData(Status::SMTP_ACTION_COMPLETE);//if the username was valid, send back 250
-                }
+			//sending back a bad error code
+			else if (!current_client.validateUser(recMessage.substr(9)))
+			{
+				current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "malformed recipient");
+			}
 
-                //sending back a bad error code
-                else if (!current_client.validateUser(recMessage.substr(9)))
-                {
-                    current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
-                }
-
-                recipients.push_back(recMessage.substr(9, recMessage.length()-10));//putting the usernames into the vector
-
-                current_client.recvData(recMessage);//getting the rcptto from the client
-            }
-        } while (recMessage.substr(0,6) == "RCPT TO"); //it's going to keep getting users and break when it's not RCPT TO
+			current_client.recvData(recMessage);//getting the rcptto from the client
+		}
 
 
         //checking to see if the string is DATA 
         if (recMessage.substr(0,6) == "DATA")
         {
+			stringstream message;
             //if not, return an error code
-            if (recMessage.substr(0,6) != "DATA")
+            if (!bRecipientSent)
             {
-                current_client.sendData(Status::SMTP_CMD_SNTX_ERR);//sending and error code back
+                current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR,"you must specify a recipient first");//sending and error code back
             }
+			else
+			{
+				current_client.sendResponse(Status::SMTP_ACTION_COMPLETE,"ok -- send data");
+				do
+				{
+					current_client.recvData(recMessage);
+					if(recMessage != ".")
+						message << recMessage << endl;
+				} while (recMessage != ".");
+			}
+			
 
         }
 
