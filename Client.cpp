@@ -65,31 +65,33 @@ int main(int argc, char * argv[])
         cout << "Logon successful.\n";
     }
 
-    bool done = false; //boolean for if the client is done communicating with the server or not
+    //bool done = false; //boolean for if the client is done communicating with the server or not
+    int option = 1;
 
-    while(!done)
+    while(option != 3)
     {
-        switch(5)
+        switch(option)
         {
-            Case 1:
-            break;
-
-            Case 2:
-            break;
-
-            Case 3:
-            break;
-
-            Case 4:
-            break;
-
-            Case 5:
-            break;
+            case 1: //option 1, to send an email
+                //code
+                cout << "send email option not yet implemented...\n";
+                break;
+            case 2: //option 2, to read messages in the user's mailbox
+                //code
+                cout << "read messages option net yet implemented...\n";
+                break;
+            case 3: //option 5, to quit
+                //code
+                cout << "quit option. goodbye...\n\n";
+                break;
+            default:
+            cerr << "You entered an invalid command...\n";
+                break;
         }
     }   
 
 
-    bool done = false; //boolean for if the client is done communicating with the server or not
+    //bool done = false; //boolean for if the client is done communicating with the server or not
 
     //if the server replies with welcome, we can start sharin filez
     // if(recMessage == "WELCOME")
