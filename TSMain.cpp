@@ -158,18 +158,17 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     //send status code that action is complete and close the file
                     current_client.sendData(Status::SMTP_ACTION_COMPLETE);
                     fout.close();
-
-                    //get data from the client before starting loop again
-                    current_client.recvData(recMessage);
-
-                    if(recMessage == "QUIT") //if they sent quit, break from while loop and the thread will end after exiting this
-                        break;
                 }
             }
-
         }
+
+        //get data from the client before starting loop again
+        current_client.recvData(recMessage);
+
+        if(recMessage == "QUIT") //if they sent quit, break from while loop and the thread will end after exiting this
+            break;
         
-    }
+    } //end of while
 }
  
 int main()

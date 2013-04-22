@@ -115,22 +115,22 @@ int main(int argc, char * argv[])
                     break; //break if we found one
 
                 //get data from client and send it over
-                cout << "Enter data. Press '.' when the message is over.\nData > "; //prompt for data
+                cout << "Enter data. Press '.' when the message is over.\n"; //prompt for data
                 cin.ignore(10000, '\n'); //ignore any newlines
-                getline(cin, sendMessage); //get the message to send
+                //getline(cin, sendMessage); //get the message to send
                 
                 while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
                 {
-                    sockClient.sendData(sendMessage); //send the data
-
                     cout << "Data > "; //prompt for data
                     getline(cin, sendMessage); //get the message to send
-                    //cout << sendMessage << endl;
+
+                    sockClient.sendData(sendMessage); //send the data
                 }
 
                 //get response after sending data and print status message for user
                 cout << "Sending data. Waiting for server...\n";
-                sockClient.recvData(recMessage);
+                // sockClient.sendData(sendMessage); //send the period over
+                sockClient.recvData(recMessage); //get data from server
 
                 //check for an error
                 if(sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
