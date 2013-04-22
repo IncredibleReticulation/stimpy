@@ -35,13 +35,13 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     if (recMessage.substr(0,4) == "HELO") //if the first word is helo
     {
         current_client.sendData(Status::SMTP_ACTION_COMPLETE); //send back 250 that it's good
-        cout << "connection successful. we got a HELO from the client\n";
+        cout << "Connection Successful from: " << GetClientAddress() << ". We did received a HELO from the client\n";
 
     }    
     else //if it's not HELO, return error code
     {
         current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending the error code
-        cout << "we didn't get HELO from client...\n";
+        cout << "We did not receive a HELO from client...\n";
     }
 
     current_client.recvData(recMessage); //recieving the verify and a username

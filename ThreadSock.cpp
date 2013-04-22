@@ -110,3 +110,15 @@ bool ThreadSock::validateUser(string user)
 
     return false;
 }
+
+//Get Client IP Address
+string ThreadSock::GetClientAddress()
+{
+    char hostname[NI_MAXHOST];
+    getnameinfo((struct sockaddr *) &clientAddress,
+                           sizeof (struct sockaddr),
+                           hostname,
+                           NI_MAXHOST, NULL, NULL, NI_NUMERICHOST);
+    return hostname;
+}
+
