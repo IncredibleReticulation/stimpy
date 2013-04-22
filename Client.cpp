@@ -65,31 +65,43 @@ int main(int argc, char * argv[])
         cout << "Logon successful.\n";
     }
 
-    bool done = false; //boolean for if the client is done communicating with the server or not
+    //bool done = false; //boolean for if the client is done communicating with the server or not
+    string menu = "1. Send Email\n2. Read Inbox\n3. Quit\n"; //our menu of options
+    int option = 1;
 
-    while(!done)
+    while(option != 3) //while they don't enter 3 for the quit option, keep prompting for selection
     {
-        switch(5)
+        if(option > 0 && option < 4) //only print menu if they entered a valid option last time
         {
-            Case 1:
-            break;
-
-            Case 2:
-            break;
-
-            Case 3:
-            break;
-
-            Case 4:
-            break;
-
-            Case 5:
-            break;
+            cout << menu; //print menu
         }
-    }   
+
+        //prompt for an option and get the option
+        cout << endl << "Enter option: ";
+        cin >> option;
+
+        switch(option)
+        {
+            case 1: //option 1, to send an email
+                //code
+                cout << "send email option not yet implemented...\n";
+                break;
+            case 2: //option 2, to read messages in the user's mailbox
+                //code
+                cout << "read messages option net yet implemented...\n";
+                break;
+            case 3: //option 5, to quit
+                //code
+                cout << "quit option. goodbye...\n\n";
+                break;
+            default:
+                cerr << "You entered an invalid command...\n";
+                break;
+        }
+    }
 
 
-    bool done = false; //boolean for if the client is done communicating with the server or not
+    //bool done = false; //boolean for if the client is done communicating with the server or not
 
     //if the server replies with welcome, we can start sharin filez
     // if(recMessage == "WELCOME")
