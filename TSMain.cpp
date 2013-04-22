@@ -73,85 +73,98 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 		bool bRecipientSent = FALSE;
 		string sRecipient = "";
 
-        if(recMessage.substr(0,9) == "MAIL FROM")
+        if(recMessage.substr(0,9) != "MAIL FROM")
         {
-            cout << "client sent: " << recMessage << endl; //for debugging
-            current_client.sendData(Status::SMTP_ACTION_COMPLETE);
+            cout << "client didn't send mail from in the beginning\n";
+            current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
         }
         else
         {
-            current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
-        }
-
-        //get more data from client
-        current_client.recvData(recMessage);
-
-		if (recMessage.substr(0,7) == "RCPT TO") //checking to see if it's RCPT TO
-		{
             cout << "client sent: " << recMessage << endl; //for debugging
-			//checking to see if the user is valid
-			if (current_client.validateUser(recMessage.substr(9, recMessage.find("@")-9)))
-			{
-				current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "ok");//if the username was valid, send back 250
-				bRecipientSent = TRUE;
-				sRecipient = recMessage.substr(9);
-			}
+            current_client.sendData(Status::SMTP_ACTION_COMPLETE);
 
-			//sending back a bad error code
-			else
-			{
-				current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "malformed recipient");
-			}
+            //get more data from client
+            current_client.recvData(recMessage);
 
-			current_client.recvData(recMessage);//getting the rcptto from the client
-		}
-
-
-        //checking to see if the string is DATA
-        if (recMessage.substr(0,6) == "DATA")
-        {
-			stringstream message;
-            //if not, return an error code
-            if (!bRecipientSent)
+            //rcpt to section
+            if (recMessage.substr(0,7) != "RCPT TO") //checking to see if it's RCPT TO
             {
-                current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR,"you must specify a recipient first");//sending and error code back
+                cout << "didn't send rcpt to...\n"; //should probably sent syntax error back
+                current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //send error
             }
-			else
-			{
-				current_client.sendResponse(Status::SMTP_ACTION_COMPLETE,"ok -- send data");
-				do
-				{
-					current_client.recvData(recMessage);
-					if(recMessage != ".")
-						message << recMessage << endl;
-				} while (recMessage != ".");
-			}
-			
+            else 
+            {
+                cout << "client sent: " << recMessage << endl; //for debugging
+                //cout << "recipient username: " << recMessage.substr(9, recMessage.find("@")-9) << endl; //for debugging
+                //checking to see if the user is valid
+                if (!current_client.validateUser(recMessage.substr(9, recMessage.find("@")-9)))
+                {
+                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "malformed recipient");
+                }
+                //sending back a bad error code
+                else
+                {
+                    current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "ok");//if the username was valid, send back 250
+                    bRecipientSent = TRUE;
+                    sRecipient = recMessage.substr(9);
+                }
+                
+                current_client.recvData(recMessage); //getting more data from client
+
+                //checking to see if the string is DATA
+                if (recMessage.substr(0,6) != "DATA")
+                {
+                    cout << "didn't get data at first\n";
+                    current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //send error
+                }
+                else
+                {
+                    stringstream message;
+
+                    //if not, return an error code
+                    if (!bRecipientSent)
+                    {
+                        current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR,"you must specify a recipient first");//sending and error code back
+                    }
+                    else
+                    {
+                        current_client.sendResponse(Status::SMTP_ACTION_COMPLETE,"ok -- send data");
+                        do
+                        {
+                            current_client.recvData(recMessage);
+                            if(recMessage != ".")
+                                message << recMessage << endl;
+                        } while (recMessage != ".");
+                    }
+
+                    //get the data of the message part
+                    //create file output object and open it in append mode
+                    ofstream fout;
+                    fout.open ("fout.txt", ios::app);
+                    
+                    current_client.recvData(recMessage); //getting a line from the user
+
+                    while (recMessage != ".") //while line !=. we want to keep getting input from the user
+                    {
+                        fout << recMessage; //write line to file
+
+                        current_client.recvData(recMessage); //getting next line from the user
+                    }
+
+                    //send status code that action is complete and close the file
+                    current_client.sendData(Status::SMTP_ACTION_COMPLETE);
+                    fout.close();
+
+                    //get data from the client before starting loop again
+                    current_client.recvData(recMessage);
+
+                    if(recMessage == "QUIT") //if they sent quit, break from while loop and the thread will end after exiting this
+                        break;
+                }
+            }
 
         }
-
-        //create file output object and open it in append mode
-        ofstream fout;
-        fout.open ("fout.txt", ios::app);
         
-        current_client.recvData(recMessage); //getting a line from the user
-
-        while (recMessage != ".") //while line !=. we want to keep getting input from the user
-        {
-            fout << recMessage; //write line to file
-
-            current_client.recvData(recMessage); //getting next line from the user
-        }
-
-        //send status code that action is complete and close the file
-        current_client.sendData(Status::SMTP_ACTION_COMPLETE);
-        fout.close();
-
-        //get data from the client before starting loop again
-        current_client.recvData(recMessage);
-
-        if(recMessage == "QUIT") //if they sent quit, break from while loop and the thread will end after exiting this
-            break;
     }
 }
  
