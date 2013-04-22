@@ -23,6 +23,7 @@ int main(int argc, char * argv[])
     string ipAddress = string(argv[1]); //ip address to connect to
     string recMessage; //message it receives
     string sendMessage; //message it sends
+    string username = ""; //will hold username
 
     //print that we're attempting to connect
     cout << "Connecting to: " << ipAddress << ":" << port << endl;
@@ -30,24 +31,27 @@ int main(int argc, char * argv[])
     ClientSocket sockClient; //clientsocket object instance
     sockClient.connectToServer(ipAddress.c_str(), port); //connect to the server using the ip and port given
 
-    //receive message
+    //receive the first 220 message
     sockClient.recvData(recMessage);
     if(recMessage.substr(0,3) == "220")
     {
         sockClient.sendData("HELO 127.0.0.1");
     }
 
-    sockClient.recvData(recMessage);
-    if(recMessage.substr(0,3) == "250")
+    sockClient.recvData(recMessage); //receive next status message from server
+    if(recMessage.substr(0,3) == "250") //prompt for login info and send it
     {
         cout << "Username: ";
         getline(cin, username);
         sendMessage = "VRFY " + username;
         sockClient.sendData(sendMessage);
     }
+
+    //receive server response after login
     sockClient.recvData(recMessage);
 
-    if(recMessage == "550" || recMessage == "500")
+    //check if we logged in successfully
+    if(recMessage == "550" || recMessage == "500") //if login fails, print error and end program
     {
         cout << "Invalid user...\n";
         return 1;
@@ -57,7 +61,6 @@ int main(int argc, char * argv[])
         cout << "Logon successful.\n\n";
     }
 
-    //bool done = false; //boolean for if the client is done communicating with the server or not
     string menu = "1. Send Email\n2. Read Inbox\n3. Quit\n"; //our menu of options
     int option = 1;
 
@@ -72,6 +75,8 @@ int main(int argc, char * argv[])
         cout << endl << "Enter option: ";
         cin >> option;
 
+        string recipient; //will hold the recipient
+
         switch(option)
         {
             case 1: //option 1, to send an email
@@ -85,7 +90,6 @@ int main(int argc, char * argv[])
                     break; //break if we found one
 
                 //get recipient of the email
-                string recipient; //will hold the recipient
                 cout << "Enter the recipient email address:"; //prompts for recipient
                 cin >> recipient; //get the recipient
 
@@ -96,14 +100,17 @@ int main(int argc, char * argv[])
 
                 //check for an error
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                {
                     break; //break if we found one
+                }
+                    
 
                 //send data to the server and get a response
                 sockClient.sendData("DATA"); //send that we're ready to send data
                 sockClient.recvData(recMessage); //get the response
 
                 //check for an error
-                if(!sockClient.checkError(recMessage), Status::SMTP_BEGIN_MSG)
+                if(!sockClient.checkError(recMessage, Status::SMTP_BEGIN_MSG))
                     break; //break if we found one
 
                 //get data from client and send it over
@@ -123,7 +130,7 @@ int main(int argc, char * argv[])
                 sockClient.recvData(recMessage);
 
                 //check for an error
-                if(atoi(recMessage) == Status::SMTP_ACTION_COMPLETE)
+                if(sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                     cout << "Message sent successfully! :)\n\n";
                 else
                     cerr << "Error sending message. Please retry in a few minutes. :(\n\n";

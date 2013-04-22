@@ -73,10 +73,24 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 		bool bRecipientSent = FALSE;
 		string sRecipient = "";
 
-		if (recMessage.substr(0,6) == "RCPT TO") //checking to see if it's RCPT TO
+        if(recMessage.substr(0,9) == "MAIL FROM")
+        {
+            cout << "client sent: " << recMessage << endl; //for debugging
+            current_client.sendData(Status::SMTP_ACTION_COMPLETE);
+        }
+        else
+        {
+            current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
+        }
+
+        //get more data from client
+        current_client.recvData(recMessage);
+
+		if (recMessage.substr(0,7) == "RCPT TO") //checking to see if it's RCPT TO
 		{
+            cout << "client sent: " << recMessage << endl; //for debugging
 			//checking to see if the user is valid
-			if (current_client.validateUser(recMessage.substr(9)))
+			if (current_client.validateUser(recMessage.substr(9, recMessage.find("@")-9)))
 			{
 				current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "ok");//if the username was valid, send back 250
 				bRecipientSent = TRUE;
@@ -84,7 +98,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 			}
 
 			//sending back a bad error code
-			else if (!current_client.validateUser(recMessage.substr(9)))
+			else
 			{
 				current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "malformed recipient");
 			}
@@ -93,7 +107,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 		}
 
 
-        //checking to see if the string is DATA 
+        //checking to see if the string is DATA
         if (recMessage.substr(0,6) == "DATA")
         {
 			stringstream message;
