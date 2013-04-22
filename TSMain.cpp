@@ -1,6 +1,7 @@
 #define _WIN32_WINNT 0x501
 #include <cstdlib>
 #include <cctype>
+#include <stdlib.h>
 #include "ThreadSock.h"
 #include "Status.h"
 
@@ -18,7 +19,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     ThreadSock current_client;
 
     current_client.setSock((SOCKET)lpParam);
-    int clientFlop = 0;
 
     string recMessage = ""; //will hold the command the client sent
 
@@ -63,11 +63,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         {
             current_client.sendData(Status::SMTP_MBOX_UNAV);
         }
-    }
-
-    if (clientFlop == -1)
-    {
-        break;
     }
 
     //getting data from the client
@@ -156,7 +151,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         //get data from the client before starting loop again
         current_client.recvData(recMessage);
 
-        if(recMessage == "QUIT") //if they sent quit, break from while loop and the thread will end after exiting this
+        if(recMessage == "QUIT" || atoi(recMessage.c_str()) == -1) //if they sent quit, break from while loop and the thread will end after exiting this
             break;
     }
 }
