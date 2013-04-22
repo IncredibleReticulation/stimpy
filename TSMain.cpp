@@ -1,7 +1,6 @@
 #define _WIN32_WINNT 0x501
 #include <cstdlib>
 #include <cctype>
-#include <stdlib.h>
 #include "ThreadSock.h"
 #include "Status.h"
 
@@ -109,8 +108,10 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     bRecipientSent = TRUE;
                     sRecipient = recMessage.substr(9);
                 }
-                
+
+                //cout << "before recvdata: " << recMessage << endl;
                 current_client.recvData(recMessage); //getting more data from client
+                //cout << "after recvdata " << recMessage << endl;
 
                 //checking to see if the string is DATA
                 if (recMessage.substr(0,6) != "DATA")
@@ -120,29 +121,31 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 }
                 else
                 {
-                    stringstream message;
+                    // stringstream message;
 
-                    //if not, return an error code
-                    if (!bRecipientSent)
-                    {
-                        current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR,"you must specify a recipient first");//sending and error code back
-                    }
-                    else
-                    {
-                        current_client.sendResponse(Status::SMTP_ACTION_COMPLETE,"ok -- send data");
-                        do
-                        {
-                            current_client.recvData(recMessage);
-                            if(recMessage != ".")
-                                message << recMessage << endl;
-                        } while (recMessage != ".");
-                    }
+                    // //if not, return an error code
+                    // if (!bRecipientSent)
+                    // {
+                    //     current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR,"you must specify a recipient first"); //sending and error code back
+                    // }
+                    // else
+                    // {
+                    //     current_client.sendResponse(Status::SMTP_BEGIN_MSG,"ok -- send data");
+                    //     do
+                    //     {
+                    //         current_client.recvData(recMessage);
+                    //         if(recMessage != ".")
+                    //             message << recMessage << endl;
+                    //     } while (recMessage != ".");
+                    // }
 
                     //get the data of the message part
                     //create file output object and open it in append mode
                     ofstream fout;
                     fout.open ("fout.txt", ios::app);
                     
+                    //tell client to send data, then get data and write to file
+                    current_client.sendResponse(Status::SMTP_BEGIN_MSG,"ok -- send data");
                     current_client.recvData(recMessage); //getting a line from the user
 
                     while (recMessage != ".") //while line !=. we want to keep getting input from the user

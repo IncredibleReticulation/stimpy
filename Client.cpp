@@ -125,9 +125,11 @@ int main(int argc, char * argv[])
 
                     cout << "Data > "; //prompt for data
                     getline(cin, sendMessage); //get the message to send
+                    //cout << sendMessage << endl;
                 }
 
-                //get response after sending data
+                //get response after sending data and print status message for user
+                cout << "Sending data. Waiting for server...\n";
                 sockClient.recvData(recMessage);
 
                 //check for an error
