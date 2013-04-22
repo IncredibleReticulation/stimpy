@@ -66,10 +66,20 @@ int main(int argc, char * argv[])
     }
 
     //bool done = false; //boolean for if the client is done communicating with the server or not
+    string menu = "1. Send Email\n2. Read Inbox\n3. Quit\n"; //our menu of options
     int option = 1;
 
-    while(option != 3)
+    while(option != 3) //while they don't enter 3 for the quit option, keep prompting for selection
     {
+        if(option > 0 && option < 4) //only print menu if they entered a valid option last time
+        {
+            cout << menu; //print menu
+        }
+
+        //prompt for an option and get the option
+        cout << endl << "Enter option: ";
+        cin >> option;
+
         switch(option)
         {
             case 1: //option 1, to send an email
@@ -85,10 +95,10 @@ int main(int argc, char * argv[])
                 cout << "quit option. goodbye...\n\n";
                 break;
             default:
-            cerr << "You entered an invalid command...\n";
+                cerr << "You entered an invalid command...\n";
                 break;
         }
-    }   
+    }
 
 
     //bool done = false; //boolean for if the client is done communicating with the server or not
