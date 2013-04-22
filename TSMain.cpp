@@ -18,6 +18,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     ThreadSock current_client;
 
     current_client.setSock((SOCKET)lpParam);
+    int clientFlop = 0;
 
     string recMessage = ""; //will hold the command the client sent
 
@@ -58,6 +59,9 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             current_client.sendData(Status::SMTP_MBOX_UNAV);
         }
     }
+
+    if (clientFlop == -1)
+        break;
 
     //getting data from the client
     current_client.recvData(recMessage);
