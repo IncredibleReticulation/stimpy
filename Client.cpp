@@ -67,6 +67,30 @@ int main(int argc, char * argv[])
 
     bool done = false; //boolean for if the client is done communicating with the server or not
 
+    while(!done)
+    {
+        switch(5)
+        {
+            Case 1:
+            break;
+
+            Case 2:
+            break;
+
+            Case 3:
+            break;
+
+            Case 4:
+            break;
+
+            Case 5:
+            break;
+        }
+    }   
+
+
+    bool done = false; //boolean for if the client is done communicating with the server or not
+
     //if the server replies with welcome, we can start sharin filez
     // if(recMessage == "WELCOME")
     // {
