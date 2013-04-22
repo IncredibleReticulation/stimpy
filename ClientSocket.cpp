@@ -28,9 +28,9 @@ void ClientSocket::connectToServer(const char *ipAddress, int port)
 
 bool ClientSocket::checkError(string message, int error)
 {
-    if(atoi(message.substr(0,3)) != error)
+    if(atoi(message.substr(0,3).c_str()) != error)
     {
-        cerr << "Something went wrong. Please try again.\n"; //error message
+        cerr << "\nSomething went wrong. Please try again.\n\n"; //error message
         return false;
     }
 
