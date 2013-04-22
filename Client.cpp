@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include "Status.h"
 #include "ClientSocket.h"
 
 int main(int argc, char * argv[])
@@ -23,21 +24,13 @@ int main(int argc, char * argv[])
     string recMessage; //message it receives
     string sendMessage; //message it sends
 
-    //ask for an ip address for the client to connect to
+    //print that we're attempting to connect
     cout << "Connecting to: " << ipAddress << ":" << port << endl;
 
     ClientSocket sockClient; //clientsocket object instance
     sockClient.connectToServer(ipAddress.c_str(), port); //connect to the server using the ip and port given
 
-    //receive the login prompt and enter stuff
-    //sockClient.recvData(recMessage);
-
-    //get user login info and send to server
-    //cin.ignore(1000, '\n'); //ignore needed bc of previous cin
-    //sockClient.getAndSendMessage(recMessage + ": "); //get login from user and send to server
-
     //receive message
-    
     sockClient.recvData(recMessage);
     if(recMessage.substr(0,3) == "220")
     {
@@ -47,7 +40,6 @@ int main(int argc, char * argv[])
     sockClient.recvData(recMessage);
     if(recMessage.substr(0,3) == "250")
     {
-        string username;
         cout << "Username: ";
         getline(cin, username);
         sendMessage = "VRFY " + username;
@@ -62,7 +54,7 @@ int main(int argc, char * argv[])
     }
     else if(recMessage == "250")
     {
-        cout << "Logon successful.\n";
+        cout << "Logon successful.\n\n";
     }
 
     //bool done = false; //boolean for if the client is done communicating with the server or not
@@ -83,9 +75,40 @@ int main(int argc, char * argv[])
         switch(option)
         {
             case 1: //option 1, to send an email
-                //code
-                cout << "send email option not yet implemented...\n";
-                break;
+                sendMessage = "MAIL FROM:<" + username + "@" + ipAddress + ">"; //set what we're sending
+                sockClient.sendData(sendMessage); //send to the server that we're sending mail
+                sockClient.recvData(recMessage); //get the response
+
+                string recipient; //will hold the recipient
+                cout << "Enter the recipient email address:"; //prompts for recipient
+                cin >> recipient; //get the recipient
+
+                sendMessage = "RCPT TO:<" + recipient + ">"; //set what we're sending
+                sockClient.sendData(sendMessage); //send data
+                sockClient.recvData(recMessage); //get response
+
+                sockClient.sendData("DATA"); //send that we're ready to send data
+                sockClient.recvData(recMessage); //get the response
+                cout << "Enter data. Press '.' when the message is over.\nData > "; //prompt for data
+
+                cin.ignore(10000, '\n'); //ignore any newlines
+                getline(cin, sendMessage); //get the message to send
+                
+                while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
+                {
+                    sockClient.sendData(sendMessage); //send the data
+
+                    cout << "Data > "; //prompt for data
+                    getline(cin, sendMessage); //get the message to send
+                }
+
+                sockClient.recvData(recMessage); //get response
+                if(atoi(recMessage) == Status::SMTP_ACTION_COMPLETE)
+                    cout << "Message sent successfully! :)\n\n";
+                else
+                    cerr << "Error sending message. Please retry in a few minutes. :(\n\n";
+                        
+                break; //break from case
             case 2: //option 2, to read messages in the user's mailbox
                 //code
                 cout << "read messages option net yet implemented...\n";
