@@ -1,6 +1,7 @@
 #define _WIN32_WINNT 0x501
 #include <cstdlib>
 #include <cctype>
+#include <stdlib.h>
 #include "ThreadSock.h"
 #include "Status.h"
 

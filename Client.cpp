@@ -15,7 +15,7 @@ int main(int argc, char * argv[])
 {
     if(argc != 3)
     {
-        cout << "USAGE: " << argv[0] << " servername portnum (usually 25)" << endl;
+        cout << "USAGE: " << argv[0] << " servername(ip) portnum (usually 25)" << endl;
         return 1;
     }
 
@@ -82,15 +82,15 @@ int main(int argc, char * argv[])
             case 1: //option 1, to send an email
                 //send who the mail is from and receive response
                 sendMessage = "MAIL FROM:<" + username + "@" + ipAddress + ">"; //set what we're sending
-                sockClient.sendData(sendMessage); //send to the server that we're sending mail
-                sockClient.recvData(recMessage); //get the response
+                sockClient.sendData(sendMessage); //notify server that we're sending mail
+                sockClient.recvData(recMessage); //get the response from the server
 
                 //check for an error
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                     break; //break if we found one
 
                 //get recipient of the email
-                cout << "Enter the recipient email address:"; //prompts for recipient
+                cout << "Enter the recipient's email address: "; //prompts for recipient
                 cin >> recipient; //get the recipient
 
                 //send recipient of the email
@@ -139,11 +139,11 @@ int main(int argc, char * argv[])
                 break; //break from case
             case 2: //option 2, to read messages in the user's mailbox
                 //code
-                cout << "read messages option net yet implemented...\n";
+                cout << "Read messages option net implemented yet...\n";
                 break;
             case 3: //option 5, to quit
                 //code
-                cout << "quit option. goodbye...\n\n";
+                cout << "You chose to quit, goodbye.\n\n";
                 break;
             default:
                 cerr << "You entered an invalid command...\n";
