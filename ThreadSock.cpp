@@ -54,9 +54,11 @@ bool ThreadSock::sendData(int i)
     return this -> sendData(s.str());
 }
 
-bool ThreadSock::sendResponse()
+bool ThreadSock::sendResponse(int responseCode, string message)
 {
-    
+	stringstream s;
+	s << responseCode << " " << message;
+	this -> sendData(s.str());
 }
 
 //Name: listFiles()
