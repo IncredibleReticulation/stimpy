@@ -79,6 +79,13 @@ int main(int argc, char * argv[])
                 sockClient.sendData(sendMessage); //send to the server that we're sending mail
                 sockClient.recvData(recMessage); //get the response
 
+                //check if there was an error
+                if(atoi(recMessage) != Status::SMTP_ACTION_COMPLETE)
+                {
+                    cerr << "Something went wrong. Please try again.\n"; //error message
+                    break; //get out of the case
+                }
+
                 string recipient; //will hold the recipient
                 cout << "Enter the recipient email address:"; //prompts for recipient
                 cin >> recipient; //get the recipient
@@ -86,9 +93,19 @@ int main(int argc, char * argv[])
                 sendMessage = "RCPT TO:<" + recipient + ">"; //set what we're sending
                 sockClient.sendData(sendMessage); //send data
                 sockClient.recvData(recMessage); //get response
+                if(atoi(recMessage) != Status::SMTP_ACTION_COMPLETE)
+                {
+                    cerr << "Something went wrong. Please try again.\n"; //error message
+                    break; //get out of the case
+                }
 
                 sockClient.sendData("DATA"); //send that we're ready to send data
                 sockClient.recvData(recMessage); //get the response
+                if(atoi(recMessage) != Status::SMTP_BEGIN_MSG)
+                {
+                    cerr << "Something went wrong. Please try again.\n"; //error message
+                    break; //get out of the case
+                }
                 cout << "Enter data. Press '.' when the message is over.\nData > "; //prompt for data
 
                 cin.ignore(10000, '\n'); //ignore any newlines
@@ -107,7 +124,7 @@ int main(int argc, char * argv[])
                     cout << "Message sent successfully! :)\n\n";
                 else
                     cerr << "Error sending message. Please retry in a few minutes. :(\n\n";
-                        
+
                 break; //break from case
             case 2: //option 2, to read messages in the user's mailbox
                 //code

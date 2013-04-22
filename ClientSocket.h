@@ -9,6 +9,7 @@ class ClientSocket : public Socket
 {
     public:
         void connectToServer(const char*, int); //connects to server
-        void getFile();
-        void listFiles();
+        bool checkError(string, int); //check for errors
+        // void getFile();
+        // void listFiles();
 };
