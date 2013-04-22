@@ -66,7 +66,9 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     }
 
     if (clientFlop == -1)
+    {
         break;
+    }
 
     //getting data from the client
     current_client.recvData(recMessage);
