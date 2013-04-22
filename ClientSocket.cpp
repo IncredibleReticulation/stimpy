@@ -26,6 +26,17 @@ void ClientSocket::connectToServer(const char *ipAddress, int port)
     }
 }
 
+bool ClientSocket::checkError(string message, int error)
+{
+    if(atoi(message.substr(0,3)) != error)
+    {
+        cerr << "Something went wrong. Please try again.\n"; //error message
+        return false;
+    }
+
+    return true;
+}
+
 
 
 // void ClientSocket::getFile()
