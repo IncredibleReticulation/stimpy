@@ -20,6 +20,7 @@ class ThreadSock{
 		~ThreadSock();
 		bool sendData(string);
 		bool sendData(int);
+		bool sendResponse(int,string);
 		bool recvData(string&);
 		int split(vector<string>*, string, string);
 		bool validateUser(string);
