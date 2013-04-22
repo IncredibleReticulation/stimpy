@@ -54,6 +54,11 @@ bool ThreadSock::sendData(int i)
     return this -> sendData(s.str());
 }
 
+bool ThreadSock::sendResponse()
+{
+    
+}
+
 //Name: listFiles()
 //Parameters: NOT KNOWN YET
 //Purpose: This function lists all of the files that are avalible for tansfer
