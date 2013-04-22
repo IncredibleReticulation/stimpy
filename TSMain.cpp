@@ -17,7 +17,7 @@ string trim(string);
 // our thread for recving commands
 DWORD WINAPI handleMail(LPVOID lpParam)
 {
-    cout << "thread created\r\n";
+    cout << "Thread Created\n";
 
     //set our socket to the socket passed in as a parameter
     ThreadSock current_client;
@@ -35,13 +35,13 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     if (recMessage.substr(0,4) == "HELO") //if the first word is helo
     {
         current_client.sendData(Status::SMTP_ACTION_COMPLETE); //send back 250 that it's good
-        cout << "connection successful. we got a HELO from the client\n";
+        cout << "Connection Successful. We received a HELO from the client.\n";
 
     }    
     else //if it's not HELO, return error code
     {
         current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending the error code
-        cout << "we didn't get HELO from client...\n";
+        cout << "Connection Failed. We did not recieive a HELO from client...\n";
     }
 
     current_client.recvData(recMessage); //recieving the verify and a username
@@ -191,7 +191,7 @@ int main()
     {
         //accept connections
         client = accept(sock,(struct sockaddr*)&from,&fromlen);
-        cout << "Client connected\r\n";
+        cout << "Client connected.\n";
         //create our recv_cmds thread and pass client socket as a parameter
         CreateThread(NULL, 0,handleMail,(LPVOID)client, 0, &thread);
     }
