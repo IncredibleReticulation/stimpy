@@ -151,7 +151,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         //get data from the client before starting loop again
         current_client.recvData(recMessage);
 
-        if(recMessage == "QUIT" || atoi(recMessage.c_str()) == -1) //if they sent quit, break from while loop and the thread will end after exiting this
+        if(recMessage == "QUIT") //if they sent quit, break from while loop and the thread will end after exiting this
             break;
     }
 }
