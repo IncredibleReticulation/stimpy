@@ -25,5 +25,4 @@ class ThreadSock{
 		int split(vector<string>*, string, string);
 		bool validateUser(string);
 		void setSock(SOCKET);
-		string GetClientAddress();
 };
