@@ -1,3 +1,11 @@
+//Course: 4050-212-02
+//Authors: Alex Buie, Luke Matarazzo, Jackson Sadowski, Steven Tucker
+//IDE/editor: Sublime Text 2
+//Compilers: mingw32-g++
+//Final SMTP Project
+//Filename: TSMain.cpp   server main
+//Purpose: 
+
 #define _WIN32_WINNT 0x501
 #include <cstdlib>
 #include <cctype>
@@ -6,7 +14,7 @@
 
 using namespace std;
 
-//prototype for the trim function
+//prototypes
 string trim(string);
 
 // our thread for recving commands

@@ -1,4 +1,7 @@
-
+//status class which has SMTP status/error codes we will be using in this project
+//Course: 4050-212-02
+//Authors: Alex Buie, Luke Matarazzo, Jackson Sadowski, Steven Tucker
+//filename: Status.h
 
 class Status
 {

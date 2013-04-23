@@ -1,4 +1,8 @@
-//sockets header file which will hold functions that need to be used for communication between sockets
+//ThreadSock header file
+//Course: 4050-212-02
+//Authors: Alex Buie, Luke Matarazzo, Jackson Sadowski, Steven Tucker
+//Filename:ThreadSock.cpp
+
 #include <vector>
 #include <string>
 #include <winsock2.h>

@@ -1,6 +1,6 @@
 //ClientSocket class file
 //Course: 4050-212-02
-//Authors: Luke Matarazzo and Jackson Sadowski
+//Authors: Alex Buie, Luke Matarazzo, Jackson Sadowski, Steven Tucker
 //Filename: ClientSocket.cpp
 //Purpose: 
 

@@ -1,4 +1,7 @@
-//socket cpp file
+//ThreadSock class file
+//Course: 4050-212-02
+//Authors: Alex Buie, Luke Matarazzo, Jackson Sadowski, Steven Tucker
+//Filename: ThreadSock.cpp
 
 #include "ThreadSock.h"
 
