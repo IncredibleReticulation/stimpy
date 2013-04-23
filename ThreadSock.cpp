@@ -65,13 +65,13 @@ bool ThreadSock::sendResponse(int responseCode, string message)
 //Parameters: NOT KNOWN YET
 //Purpose: This function lists all of the files that are avalible for tansfer
 //Returns: NOT KNOWN YET
-bool ThreadSock::recvData(string &s)
+int ThreadSock::recvData(string &s)
 {
     char buffer[256];
     int i = recv(this -> socket, buffer, 256, 0);
     buffer[i] = '\0';
     s = buffer;
-    return true; //return true for success
+    return i; //return true for success
 }
 
 //Name: split()
