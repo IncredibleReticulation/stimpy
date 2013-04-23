@@ -87,7 +87,11 @@ int main(int argc, char * argv[])
 
                 //check for an error
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                {
+                    cout << recMessage << endl;
                     break; //break if we found one
+                }
+                    
 
                 //get recipient of the email
                 cout << "Enter the recipient's email address: "; //prompts for recipient
