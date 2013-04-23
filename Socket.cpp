@@ -61,13 +61,13 @@ bool Socket::sendData(int i)
 //Parameters: NOT KNOWN YET
 //Purpose: This function lists all of the files that are avalible for tansfer
 //Returns: NOT KNOWN YET
-bool Socket::recvData(string &s)
+int Socket::recvData(string &s)
 {
     char buffer[256];
     int i = recv(mySocket, buffer, 256, 0);
     buffer[i] = '\0';
     s = buffer;
-    return true; //return true for success
+    return i; //return true for success
 }
 
 //Name: listFiles()

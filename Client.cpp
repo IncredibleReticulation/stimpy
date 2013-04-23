@@ -24,6 +24,7 @@ int main(int argc, char * argv[])
     string recMessage; //message it receives
     string sendMessage; //message it sends
     string username = ""; //will hold username
+    int serverFlop = 0; //will hold value given by recv function and will be -1 if the server flops and shuts down
 
     //print that we're attempting to connect
     cout << "Connecting to: " << ipAddress << ":" << port << endl;
@@ -32,13 +33,13 @@ int main(int argc, char * argv[])
     sockClient.connectToServer(ipAddress.c_str(), port); //connect to the server using the ip and port given
 
     //receive the first 220 message
-    sockClient.recvData(recMessage);
+    serverFlop = sockClient.recvData(recMessage);
     if(recMessage.substr(0,3) == "220")
     {
         sockClient.sendData("HELO 127.0.0.1");
     }
 
-    sockClient.recvData(recMessage); //receive next status message from server
+    serverFlop = sockClient.recvData(recMessage); //receive next status message from server
     if(recMessage.substr(0,3) == "250") //prompt for login info and send it
     {
         cout << "Username: ";
@@ -48,12 +49,13 @@ int main(int argc, char * argv[])
     }
 
     //receive server response after login
-    sockClient.recvData(recMessage);
+    serverFlop = sockClient.recvData(recMessage);
 
     //check if we logged in successfully
     if(recMessage == "550" || recMessage == "500") //if login fails, print error and end program
     {
         cout << "Invalid user...\n";
+        sockClient.closeConnection(); //close connection
         return 1;
     }
     else if(recMessage == "250")
@@ -66,6 +68,11 @@ int main(int argc, char * argv[])
 
     while(option != 3) //while they don't enter 3 for the quit option, keep prompting for selection
     {
+        if(serverFlop == -1)
+        {
+            cout << "There's been an unknown error on the server. Try reconnecting momentarily...\n\n";
+            break;
+        }
         if(option > 0 && option < 4) //only print menu if they entered a valid option last time
         {
             cout << menu; //print menu
@@ -83,7 +90,7 @@ int main(int argc, char * argv[])
                 //send who the mail is from and receive response
                 sendMessage = "MAIL FROM:<" + username + "@" + ipAddress + ">"; //set what we're sending
                 sockClient.sendData(sendMessage); //notify server that we're sending mail
-                sockClient.recvData(recMessage); //get the response from the server
+                serverFlop = sockClient.recvData(recMessage); //get the response from the server
 
                 //check for an error
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
@@ -100,7 +107,7 @@ int main(int argc, char * argv[])
                 //send recipient of the email
                 sendMessage = "RCPT TO:<" + recipient + ">"; //set what we're sending
                 sockClient.sendData(sendMessage); //send data
-                sockClient.recvData(recMessage); //get response
+                serverFlop = sockClient.recvData(recMessage); //get response
 
                 //check for an error
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
@@ -112,7 +119,7 @@ int main(int argc, char * argv[])
 
                 //send data to the server and get a response
                 sockClient.sendData("DATA"); //send that we're ready to send data
-                sockClient.recvData(recMessage); //get the response
+                serverFlop = sockClient.recvData(recMessage); //get the response
 
                 //check for an error
                 if(!sockClient.checkError(recMessage, Status::SMTP_BEGIN_MSG))
@@ -137,7 +144,7 @@ int main(int argc, char * argv[])
                 //get response after sending data and print status message for user
                 cout << "Sending data. Waiting for server...\n";
                 // sockClient.sendData(sendMessage); //send the period over
-                sockClient.recvData(recMessage); //get data from server
+                serverFlop = sockClient.recvData(recMessage); //get data from server
 
                 //check for an error
                 if(sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))

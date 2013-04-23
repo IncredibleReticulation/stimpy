@@ -29,7 +29,7 @@ class Socket
         //communication methods
         bool sendData(string);
 		bool sendData(int);
-        bool recvData(string&);
+        int recvData(string&);
         void closeConnection();
         string getAndSendMessage(const string&);
         int split(vector<string>*, string, string);
