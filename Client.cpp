@@ -128,6 +128,9 @@ int main(int argc, char * argv[])
                     cout << "Data > "; //prompt for data
                     getline(cin, sendMessage); //get the message to send
 
+                    if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
+                        sendMessage = "\n";
+
                     sockClient.sendData(sendMessage); //send the data
                 }
 

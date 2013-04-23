@@ -151,6 +151,10 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         while (recMessage != ".") //while line !=. we want to keep getting input from the user
                         {
                             fout << recMessage; //write line to file
+                            if(recMessage != "\n")
+                                fout << endl;
+
+                            cout << "message: " << recMessage << endl;
 
                             clientFlop = current_client.recvData(recMessage); //getting next line from the user
                         }
