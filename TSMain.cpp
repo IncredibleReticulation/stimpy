@@ -56,16 +56,15 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         {
             current_client.sendData(Status::SMTP_ACTION_COMPLETE); //if the username was valid, send back 250
         }
-
-        //sending back a bad error code
-        if (!current_client.validateUser(username))
+        else
         {
             current_client.sendData(Status::SMTP_MBOX_UNAV);
         }
     }
 
     //getting data from the client
-    current_client.recvData(recMessage);
+    int clientFlop = 0; //will hold the value that the recv function returns
+    clientFlop = current_client.recvData(recMessage);
 
     //our recv loop
     while(recMessage != "QUIT" || recMessage != "Quit" || recMessage != "quit")
@@ -84,7 +83,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             current_client.sendData(Status::SMTP_ACTION_COMPLETE);
 
             //get more data from client
-            current_client.recvData(recMessage);
+            clientFlop = current_client.recvData(recMessage);
 
             //rcpt to section
             if (recMessage.substr(0,7) != "RCPT TO") //checking to see if it's RCPT TO
@@ -111,7 +110,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                     //getting data and writing to file part
                     //cout << "before recvdata: " << recMessage << endl;
-                    current_client.recvData(recMessage); //getting more data from client
+                    clientFlop = current_client.recvData(recMessage); //getting more data from client
                     //cout << "after recvdata " << recMessage << endl;
 
                     //checking to see if the string is DATA
@@ -147,13 +146,13 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         
                         //tell client to send data, then get data and write to file
                         current_client.sendResponse(Status::SMTP_BEGIN_MSG,"ok -- send data");
-                        current_client.recvData(recMessage); //getting a line from the user
+                        clientFlop = current_client.recvData(recMessage); //getting a line from the user
 
                         while (recMessage != ".") //while line !=. we want to keep getting input from the user
                         {
                             fout << recMessage; //write line to file
 
-                            current_client.recvData(recMessage); //getting next line from the user
+                            clientFlop = current_client.recvData(recMessage); //getting next line from the user
                         }
 
                         //send status code that action is complete and close the file
@@ -166,9 +165,9 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         }
 
         //get data from the client before starting loop again
-        current_client.recvData(recMessage);
+        clientFlop = current_client.recvData(recMessage);
 
-        if(recMessage == "QUIT") //if they sent quit, break from while loop and the thread will end after exiting this
+        if(recMessage == "QUIT" || clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
             break;
         
     } //end of while
