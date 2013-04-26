@@ -160,6 +160,7 @@ int main(int argc, char * argv[])
             case 3: //option 5, to quit
                 //code
                 cout << "You chose to quit, goodbye.\n\n";
+                sockClient.sendData("QUIT"); //send quit to the server so it knows we're disconnecting
                 break;
             default:
                 cerr << "You entered an invalid command...\n";

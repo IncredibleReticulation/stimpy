@@ -70,8 +70,8 @@ bool ThreadSock::sendResponse(int responseCode, string message)
 //Returns: NOT KNOWN YET
 int ThreadSock::recvData(string &s)
 {
-    char buffer[256];
-    int i = recv(this -> socket, buffer, 256, 0);
+    char buffer[1000];
+    int i = recv(this -> socket, buffer, 1000, 0);
     buffer[i] = '\0';
     s = buffer;
     return i; //return true for success
