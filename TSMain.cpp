@@ -150,7 +150,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         //get the data of the message part
                         //create file output object and open it in append mode
                         ofstream fout;
-                        fout.open ("fout.txt", ios::app);
+                        fout.open (username + ".txt", ios::app);
                         
                         //tell client to send data, then get data and write to file
                         current_client.sendResponse(Status::SMTP_BEGIN_MSG,"ok -- send data");
