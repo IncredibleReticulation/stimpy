@@ -53,11 +53,12 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 	} while (!bHeloSent);
 
     current_client.recvData(recMessage); //recieving the verify and a username
+    string username;
 
     //checking to see if it's a verify
     if (recMessage.substr(0,4) == "VRFY")
     {
-        string username = trim(recMessage.substr(5)); //trim the username
+        username = trim(recMessage.substr(5)); //trim the username
 
         //if it is, validate the username and continue
         if (current_client.validateUser(username))
@@ -150,7 +151,8 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         //get the data of the message part
                         //create file output object and open it in append mode
                         ofstream fout;
-                        fout.open (username + ".txt", ios::app);
+                        string tempFile = username + ".txt";
+                        fout.open (tempFile.c_str(), ios::app);
                         
                         //tell client to send data, then get data and write to file
                         current_client.sendResponse(Status::SMTP_BEGIN_MSG,"ok -- send data");
@@ -158,6 +160,9 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                         while (recMessage != ".") //while line !=. we want to keep getting input from the user
                         {
+                            if(clientFlop == -1)
+                                break;
+
                             fout << recMessage; //write line to file
                             if(recMessage != "\n")
                                 fout << endl;
@@ -184,7 +189,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         
     } //end of while
 }
- 
+
 int main()
 {
     cout << "Starting up multi-threaded SMTP server\n";
