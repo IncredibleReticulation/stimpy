@@ -72,18 +72,13 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     int clientFlop = 0; //will hold the value that the recv function returns
     clientFlop = current_client.recvData(recMessage);
 
-    //our recv loop
+    //our send/recv loop
     while(recMessage != "QUIT" || recMessage != "Quit" || recMessage != "quit")
     {
 		bool bRecipientSent = FALSE;
 		string sRecipient = "";
 
-        if(recMessage.substr(0,9) != "MAIL FROM")
-        {
-            cout << "Client didn't Send MAIL FROM in the beginning\n";
-            current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
-        }
-        else
+        if(recMessage.substr(0,9) == "MAIL FROM")
         {
             cout << "Client Sent: " << recMessage << endl; //for debugging
             current_client.sendData(Status::SMTP_ACTION_COMPLETE);
@@ -131,12 +126,14 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         //create file output object and open it in append mode
                         ofstream fout;
                         fout.open ((string(sRecipient + ".txt")).c_str(), ios::app);
+
+                        //write the initial part of the email
                         
                         //tell client to send data, then get data and write to file
                         current_client.sendResponse(Status::SMTP_BEGIN_MSG,"OK -- Send Data");
-                        clientFlop = current_client.recvData(recMessage); //getting a line from the user
+                        clientFlop = current_client.recvData(recMessage); //getting a line from the client
 
-                        while (recMessage != ".") //while line !=. we want to keep getting input from the user
+                        while (recMessage != ".") //while line !=. we want to keep getting message data from the client
                         {
                             if(clientFlop == -1)
                                 break;
@@ -157,7 +154,18 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 }
             }
         }
-    }
+
+        else if(recMessage.substr(0,5) == "INBOX") //if they send an inbox and want to check their inbox
+        {
+            current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //send 250 OK so they know we got the command okay, then send mail
+
+        }
+
+        else
+        {
+            cout << "Client didn't send 'MAIL FROM' or 'INBOX' in the beginning\n";
+            current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
+        }
 
         //get data from the client before starting loop again
         clientFlop = current_client.recvData(recMessage);
