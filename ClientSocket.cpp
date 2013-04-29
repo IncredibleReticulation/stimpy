@@ -37,9 +37,10 @@ bool ClientSocket::checkError(string message, int error)
     return true;
 }
 
-string ClientSocket::encrypt(string message, int key)
+string ClientSocket::encrypt(string message)
 {
     int aVal; //will hold ascii value of each character
+    int key = 5; //key value, in sloppy way
 
     for(int i = 0; i < message.length(); i++)
     {
@@ -58,9 +59,10 @@ string ClientSocket::encrypt(string message, int key)
     return message; //return the new message which is now encrypted
 }
 
-string ClientSocket::decrypt(string message, int key)
+string ClientSocket::decrypt(string message)
 {
     int value = 0; //holds the int value of the char
+    int key = 5; //key value, in sloppy way
 
     for (int i=0; i<message.length(); i++)
     {
