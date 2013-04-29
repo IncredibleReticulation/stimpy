@@ -80,3 +80,26 @@ string ClientSocket::decrypt(string message)
 
     return message; //returning the string
 }
+
+int ClientSocket::split(vector<string>* v, string s, string del)
+{
+    //if the delimeter does not appear once, return 0 because string will not be split
+    if(s.find(del) == -1)
+    {
+        v->push_back(s); //put the string in the vector so the user can still use the value they passed in
+        return 0;
+    }
+        
+    int delims = 0; //will hold number of delimeters found in the string that needs to be split
+
+    while(s.find(del) != -1) //while there is still a delimeter present, continue to break the string apart
+    {
+        v->push_back(s.substr(0, s.find(del)));     //add part of string up to the delimeter to the vector
+        s.erase(0, s.find(del) + 1);                //delete added part
+        delims++; //increment
+    }
+
+    v->push_back(s.substr(0));  //add the rest of the string after the final delimeter
+
+    return delims + 1;          //return number of elements added to the vector
+}

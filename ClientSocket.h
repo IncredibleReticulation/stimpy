@@ -12,4 +12,5 @@ class ClientSocket : public Socket
         bool checkError(string, int); //check for errors
         string encrypt(string);
         string decrypt(string);
+        int split(vector<string>*, string, string);
 };
