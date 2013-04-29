@@ -160,13 +160,27 @@ int main(int argc, char * argv[])
 
                 break; //break from case
             case 2: //option 2, to read messages in the user's mailbox
-                //code
+                sockClient.sendData("INBOX"); //send the inbox command
+                sockClient.recvData(recMessage); //await a reply with a status code from the server
+
+                //check for an error; should be a 250
+                if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                    break; //break if we found one
+
+                sockClient.recvData(recMessage); //get the first email message
+
+                while(recMessage != ".") //while the server doesn't send a single period, keep getting and outputting email messages
+                {
+                    //code
+                }
+
                 cout << "Read messages option net implemented yet...\n";
                 break;
-            case 3: //option 5, to quit
+            case 3: //option 3, to quit
                 //code
                 cout << "You chose to quit, goodbye.\n\n";
                 sockClient.sendData("QUIT"); //send quit to the server so it knows we're disconnecting
+                //sockClient.recvData(recMessage); //get the final message
                 break;
             default:
                 cerr << "You entered an invalid command...\n";
