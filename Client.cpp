@@ -162,7 +162,6 @@ int main(int argc, char * argv[])
             case 2: //option 2, to read messages in the user's mailbox
                 sockClient.sendData("INBOX"); //send the inbox command
                 sockClient.recvData(recMessage); //await a reply with a status code from the server
-                vector<string> message;
 
                 //check for an error; should be a 250
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
@@ -172,20 +171,21 @@ int main(int argc, char * argv[])
 
                 while(recMessage != ".") //while the server doesn't send a single period, keep getting and outputting email messages
                 {
-                    //split the message into the parts we need
-                    sockClient.split(&message, recMessage, ",\"");
-
+                   
+		    		//split the message into the parts we need
+		    		vector<string> message;                    
+		    		sockClient.split(&message, recMessage, ",\"");
+	
                     //print information
-                    cout << "Time: " << message[0] << endl; //print timestamp with date
-                    cout << "To: " << message[1] << endl; //print who the message was to
-                    cout << "From: " << message[2] << endl; //print who the message was from
+                    cout << "Time: " << message[0].substr(1, message[0].length-2) << endl; //print timestamp with date
+                    cout << "To: " << message[1].substr(1, message[0].length-2) << endl; //print who the message was to
+                    cout << "From: " << message[2].substr(1, message[0].length-2) << endl; //print who the message was from
                     cout << "Message Body: \n" << sockClient.decrypt(message[3]); //decrypt and print the message
 
-                    //get the next email message
-                    sockClient.recvData(recMessage);
+                    sockClient.recvData(recMessage); //get the next email message
                 }
-
-                //cout << "Read messages option net implemented yet...\n";
+				
+                cout << "End of the inbox!\n"; //letting the client know it's the end of their inbox
                 break;
             case 3: //option 3, to quit
                 //code
