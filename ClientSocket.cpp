@@ -74,7 +74,7 @@ string ClientSocket::decrypt(string message)
                 value += 95; //add 95 to the int
 
             value += 32; //add 32 to the int regardless of the value
-            message[i] = value; //assigning c the character associated with the int of value    
+            message[i] = value; //assigning c the character associated with the int of value
         }
     }
 
