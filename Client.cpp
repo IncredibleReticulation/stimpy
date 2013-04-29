@@ -162,19 +162,30 @@ int main(int argc, char * argv[])
             case 2: //option 2, to read messages in the user's mailbox
                 sockClient.sendData("INBOX"); //send the inbox command
                 sockClient.recvData(recMessage); //await a reply with a status code from the server
+                vector<string> message;
 
                 //check for an error; should be a 250
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
-                    break; //break if we found one
+                    break; //break if we found an error
 
                 sockClient.recvData(recMessage); //get the first email message
 
                 while(recMessage != ".") //while the server doesn't send a single period, keep getting and outputting email messages
                 {
-                    //code
+                    //split the message into the parts we need
+                    sockClient.split(&message, recMessage, ",\"");
+
+                    //print information
+                    cout << "Time: " << message[0] << endl; //print timestamp with date
+                    cout << "To: " << message[1] << endl; //print who the message was to
+                    cout << "From: " << message[2] << endl; //print who the message was from
+                    cout << "Message Body: \n" << sockClient.decrypt(message[3]); //decrypt and print the message
+
+                    //get the next email message
+                    sockClient.recvData(recMessage);
                 }
 
-                cout << "Read messages option net implemented yet...\n";
+                //cout << "Read messages option net implemented yet...\n";
                 break;
             case 3: //option 3, to quit
                 //code
