@@ -28,7 +28,7 @@ ThreadSock::ThreadSock()
     
 }
 
-//blank default constructor
+//blank default destructor
 ThreadSock::~ThreadSock()
 {
 

@@ -100,9 +100,11 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             else 
             {
                 cout << "Client Send: " << recMessage << endl; //for debugging
+                sRecipient = recMessage.substr(9, recMessage.find("@")-9);
+
                 //cout << "recipient username: " << recMessage.substr(9, recMessage.find("@")-9) << endl; //for debugging
                 //checking to see if the user is valid
-                if (!current_client.validateUser(recMessage.substr(9, recMessage.find("@")-9)))
+                if (!current_client.validateUser(sRecipient))
                 {
                     current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient");
                 }
@@ -111,8 +113,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 {
                     current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK");//if the username was valid, send back 250
                     bRecipientSent = TRUE;
-                    sRecipient = recMessage.substr(9);
-
 
                     //getting data and writing to file part
                     //cout << "before recvdata: " << recMessage << endl;
@@ -127,28 +127,10 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     }
                     else
                     {
-                        // stringstream message;
-
-                        // //if not, return an error code
-                        // if (!bRecipientSent)
-                        // {
-                        //     current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR,"you must specify a recipient first");//sending and error code back
-                        // }
-                        // else
-                        // {
-                        //     current_client.sendResponse(Status::SMTP_BEGIN_MSG,"ok -- send data");
-                        //     do
-                        //     {
-                        //         current_client.recvData(recMessage);
-                        //         if(recMessage != ".")
-                        //             message << recMessage << endl;
-                        //     } while (recMessage != ".");
-                        // }
-
                         //get the data of the message part
                         //create file output object and open it in append mode
                         ofstream fout;
-                        fout.open ((string(username + ".txt")).c_str(), ios::app);
+                        fout.open ((string(sRecipient + ".txt")).c_str(), ios::app);
                         
                         //tell client to send data, then get data and write to file
                         current_client.sendResponse(Status::SMTP_BEGIN_MSG,"OK -- Send Data");
@@ -181,7 +163,10 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         clientFlop = current_client.recvData(recMessage);
 
         if(recMessage == "QUIT" || clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
+        {
+            current_client.sendResponse(Status::SMTP_SRV_CLOSE, "OK -- Goodbye...");
             break;
+        }   
         
     } //end of while
 }
