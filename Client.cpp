@@ -11,6 +11,9 @@
 #include "Status.h"
 #include "ClientSocket.h"
 
+//prototypes
+string trim(string);
+
 int main(int argc, char * argv[])
 {
     if(argc != 3)
@@ -44,6 +47,8 @@ int main(int argc, char * argv[])
     {
         cout << "Username: ";
         getline(cin, username);
+        username = trim(username);
+
         sendMessage = "VRFY " + username;
         sockClient.sendData(sendMessage);
     }
@@ -173,4 +178,19 @@ int main(int argc, char * argv[])
     sockClient.closeConnection();
 
     return 0; //ends program
+}
+
+string trim(string s)
+{   
+    while(isspace(s[0])) //if the first thing is a space, erase it until it is longer a space.
+    {
+        s.erase(0, 1); //remove the first index because it is a space
+    }
+
+    while(isspace(s[s.length()-1])) //if the last char of the string is a space, remove it until it is no longer a space
+    {
+        s.erase(s.length()-1, 1); //remove that char because it is a space
+    }
+
+    return s; //return the final string
 }
