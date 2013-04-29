@@ -128,7 +128,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         fout.open ((string(sRecipient + ".txt")).c_str(), ios::app);
 
                         //write the initial part of the email
-                        fout << "\"" << current_client.getDateTime() << ",\"" << "\"" << sRecipient << ",\"" << "\"" << username << ",\"";
+                        fout << "\"" << current_client.getDateTime() << "\",\"" << sRecipient << "\",\"" << username << "\",\"";
                         
                         //tell client to send data, then get data and write to file
                         current_client.sendResponse(Status::SMTP_BEGIN_MSG,"OK -- Send Data");
@@ -145,6 +145,9 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                             clientFlop = current_client.recvData(recMessage); //getting next line from the user
                         }
+
+                        //write the final quotation and add a newline to the end of it
+                        fout << "\"" << endl;
 
                         //send status code that action is complete and close the file
                         current_client.sendData(Status::SMTP_ACTION_COMPLETE);
