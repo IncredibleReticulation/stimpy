@@ -155,9 +155,9 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         fout.close();
                     }
                 }
-                
             }
         }
+    }
 
         //get data from the client before starting loop again
         clientFlop = current_client.recvData(recMessage);
