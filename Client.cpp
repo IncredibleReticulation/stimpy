@@ -143,7 +143,8 @@ int main(int argc, char * argv[])
                     if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
                         sendMessage = "\n";
 
-                    sendMessage = sockClient.encrypt(sendMessage); //encrypt the message before we send it to the server
+                    if(sendMessage != ".")
+                        sendMessage = sockClient.encrypt(sendMessage); //encrypt the message before we send it to the server
 
                     sockClient.sendData(sendMessage); //send the data
                 }
