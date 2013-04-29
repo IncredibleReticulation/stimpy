@@ -10,6 +10,6 @@ class ClientSocket : public Socket
     public:
         void connectToServer(const char*, int); //connects to server
         bool checkError(string, int); //check for errors
-        // void getFile();
-        // void listFiles();
+        string encrypt(string, int);
+        string decrypt(string, int);
 };
