@@ -83,12 +83,12 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
         if(recMessage.substr(0,9) != "MAIL FROM")
         {
-            cout << "client didn't send mail from in the beginning\n";
+            cout << "Client didn't Send MAIL FROM in the beginning\n";
             current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
         }
         else
         {
-            cout << "client sent: " << recMessage << endl; //for debugging
+            cout << "Client Sent: " << recMessage << endl; //for debugging
             current_client.sendData(Status::SMTP_ACTION_COMPLETE);
 
             //get more data from client
@@ -97,22 +97,22 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             //rcpt to section
             if (recMessage.substr(0,7) != "RCPT TO") //checking to see if it's RCPT TO
             {
-                cout << "didn't send rcpt to...\n"; //should probably sent syntax error back
+                cout << "RCPT TO wasn't sent...\n"; //should probably sent syntax error back
                 current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //send error
             }
             else 
             {
-                cout << "client sent: " << recMessage << endl; //for debugging
+                cout << "Client Send: " << recMessage << endl; //for debugging
                 //cout << "recipient username: " << recMessage.substr(9, recMessage.find("@")-9) << endl; //for debugging
                 //checking to see if the user is valid
                 if (!current_client.validateUser(recMessage.substr(9, recMessage.find("@")-9)))
                 {
-                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "malformed recipient");
+                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient");
                 }
                 //sending back a bad error code
                 else
                 {
-                    current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "ok");//if the username was valid, send back 250
+                    current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK");//if the username was valid, send back 250
                     bRecipientSent = TRUE;
                     sRecipient = recMessage.substr(9);
 
@@ -125,7 +125,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     //checking to see if the string is DATA
                     if (recMessage.substr(0,6) != "DATA")
                     {
-                        cout << "didn't get data at first\n";
+                        cout << "DATA wasn't received\n";
                         current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //send error
                     }
                     else
@@ -154,7 +154,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         fout.open ((string(username + ".txt")).c_str(), ios::app);
                         
                         //tell client to send data, then get data and write to file
-                        current_client.sendResponse(Status::SMTP_BEGIN_MSG,"ok -- send data");
+                        current_client.sendResponse(Status::SMTP_BEGIN_MSG,"OK -- Send Data");
                         clientFlop = current_client.recvData(recMessage); //getting a line from the user
 
                         while (recMessage != ".") //while line !=. we want to keep getting input from the user
@@ -166,7 +166,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                             if(recMessage != "\n")
                                 fout << endl;
 
-                            cout << "message: " << recMessage << endl;
+                            cout << "Message: " << recMessage << endl;
 
                             clientFlop = current_client.recvData(recMessage); //getting next line from the user
                         }
