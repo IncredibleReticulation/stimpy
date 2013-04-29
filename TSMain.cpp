@@ -4,7 +4,7 @@
 //Compilers: mingw32-g++
 //Final SMTP Project
 //Filename: TSMain.cpp   server main
-//Purpose: 
+//Purpose:
 
 #define _WIN32_WINNT 0x501
 #include <cstdlib>
@@ -40,7 +40,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 			cout << "Connection Successful. We received a HELO from the client.\n";
 			bHeloSent = TRUE;
 
-		}    
+		}
 		else //if it's not HELO, return error code
 		{
 			current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending the error code
@@ -92,7 +92,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 cout << "RCPT TO wasn't sent...\n"; //should probably sent syntax error back
                 current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //send error
             }
-            else 
+            else
             {
                 cout << "Client Send: " << recMessage << endl; //for debugging
                 sRecipient = recMessage.substr(9, recMessage.find("@")-9);
@@ -129,7 +129,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                         //write the initial part of the email
                         fout << "\"" << current_client.getDateTime() << "\",\"" << sRecipient << "\",\"" << username << "\",\"";
-                        
+
                         //tell client to send data, then get data and write to file
                         current_client.sendResponse(Status::SMTP_BEGIN_MSG,"OK -- Send Data");
                         clientFlop = current_client.recvData(recMessage); //getting a line from the client
@@ -140,6 +140,9 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                                 break;
 
                             fout << recMessage; //write line to file
+
+                            if(recMessage != "\n")
+                                fout << endl;
 
                             cout << "Message: " << recMessage << endl;
 
@@ -176,8 +179,8 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         {
             current_client.sendResponse(Status::SMTP_SRV_CLOSE, "OK -- Goodbye...");
             break;
-        }   
-        
+        }
+
     } //end of while
 }
 
