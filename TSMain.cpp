@@ -128,6 +128,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         fout.open ((string(sRecipient + ".txt")).c_str(), ios::app);
 
                         //write the initial part of the email
+                        fout << "\"" << current_client.getDateTime() << ",\"" << "\"" << sRecipient << ",\"" << "\"" << username << ",\"";
                         
                         //tell client to send data, then get data and write to file
                         current_client.sendResponse(Status::SMTP_BEGIN_MSG,"OK -- Send Data");
@@ -139,8 +140,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                                 break;
 
                             fout << recMessage; //write line to file
-                            if(recMessage != "\n")
-                                fout << endl;
 
                             cout << "Message: " << recMessage << endl;
 

@@ -3,6 +3,7 @@
 //Authors: Alex Buie, Luke Matarazzo, Jackson Sadowski, Steven Tucker
 //Filename: ThreadSock.cpp
 
+#include <ctime>
 #include "ThreadSock.h"
 
 //default constructor which will read in users from the text file and put it in the vector
@@ -112,4 +113,22 @@ bool ThreadSock::validateUser(string user)
             return true;
 
     return false;
+}
+
+string ThreadSock::getDateTime()
+{
+    time_t rawtime; //to get the right time
+    string date, time; //strings for date and time
+    string temp; //will hold the date for easier manipulation
+
+    //get time
+    std::time(&rawtime);
+    char *myTime = ctime(&rawtime); //put the time
+
+    temp = myTime;
+    date = temp.substr(4, 7);
+    date += temp.substr(20, 4);
+    time = temp.substr(11, 8);
+
+    return (date + ", " + time);
 }
