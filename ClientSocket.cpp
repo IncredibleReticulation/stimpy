@@ -43,13 +43,16 @@ string ClientSocket::encrypt(string message, int key)
 
     for(int i = 0; i < message.length(); i++)
     {
-        aVal = message[i] - 32 + key; //get the ascii value of character, subtract 32 and add the key
+        if(message[i] != '\n') //don't encrypt a newline
+        {
+            aVal = message[i] - 32 + key; //get the ascii value of character, subtract 32 and add the key
 
-        if(aVal > 95) //check if adding the key makes it greater than 95
-            aVal -= 95; //if so, subtract 95
+            if(aVal > 95) //check if adding the key makes it greater than 95
+                aVal -= 95; //if so, subtract 95
 
-        aVal += 32; //add 32 back to it
-        message[i] = aVal; //set the char equal to the new, encrypted one
+            aVal += 32; //add 32 back to it
+            message[i] = aVal; //set the char equal to the new, encrypted one
+        }   
     }
 
     return message; //return the new message which is now encrypted
@@ -61,13 +64,16 @@ string ClientSocket::decrypt(string message, int key)
 
     for (int i=0; i<message.length(); i++)
     {
-        value = (message[i] - 32) - key; //get ascii value, then subtract 32 and the key
+        if(message[i] != '\n') //don't decrypt a newline
+        {
+            value = (message[i] - 32) - key; //get ascii value, then subtract 32 and the key
 
-        if (value < 0) // if the value is negative
-            value += 95; //add 95 to the int
+            if (value < 0) // if the value is negative
+                value += 95; //add 95 to the int
 
-        value += 32; //add 32 to the int regardless of the value
-        message[i] = value; //assigning c the character associated with the int of value
+            value += 32; //add 32 to the int regardless of the value
+            message[i] = value; //assigning c the character associated with the int of value    
+        }
     }
 
     return message; //returning the string
