@@ -138,12 +138,13 @@ int main(int argc, char * argv[])
                     if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
                         sendMessage = "\n";
 
+                    sendMessage = sockClient.encrypt(sendMessage); //encrypt the message before we send it to the server
+
                     sockClient.sendData(sendMessage); //send the data
                 }
 
                 //get response after sending data and print status message for user
                 cout << "Sending data. Waiting for server...\n";
-                // sockClient.sendData(sendMessage); //send the period over
                 serverFlop = sockClient.recvData(recMessage); //get data from server
 
                 //check for an error
