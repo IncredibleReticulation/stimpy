@@ -155,19 +155,9 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         fout.close();
                     }
                 }
-
-            }
-                if (recMessage.substr(0,5) != "INBOX")
-                {
-                    cout << "INBOX wasn't opened.. Wrong Command.\n";
-                    current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //send error
-                }
-                else
-                {
-                    
-                }
             }
         }
+    }
 
         //get data from the client before starting loop again
         clientFlop = current_client.recvData(recMessage);
