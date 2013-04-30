@@ -25,6 +25,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     current_client.setSock((SOCKET)lpParam);
 
     string recMessage = ""; //will hold the command the client sent
+    string sendMessage = ""; //will hold the reply we send
 
     //Set and send the welcome message
     current_client.sendResponse(Status::SMTP_SRV_RDY, "stimpy 0.0.1/flopcity - Welcome"); //send initiation hello
@@ -128,7 +129,8 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         fout.open ((string(sRecipient + ".txt")).c_str(), ios::app);
 
                         //write the initial part of the email
-                        fout << "\"" << current_client.getDateTime() << "\",\"" << sRecipient << "\",\"" << username << "\",\"";
+                        //fout << "\"" << current_client.getDateTime() << "\",\"" << sRecipient << "\",\"" << username << "\",\"";
+                        fout << current_client.getDateTime() << endl << sRecipient << endl << username << endl;
 
                         //tell client to send data, then get data and write to file
                         current_client.sendResponse(Status::SMTP_BEGIN_MSG,"OK -- Send Data");
@@ -150,7 +152,9 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         }
 
                         //write the final quotation and add a newline to the end of it
-                        fout << "\"" << endl;
+                        //fout << "\"" << endl;
+                        //char del = 236;
+                        fout << "." << endl;
 
                         //send status code that action is complete and close the file
                         current_client.sendData(Status::SMTP_ACTION_COMPLETE);
@@ -163,6 +167,32 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         else if(recMessage.substr(0,5) == "INBOX") //if they send an inbox and want to check their inbox
         {
             current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //send 250 OK so they know we got the command okay, then send mail
+            cout << "client sent: " << recMessage << endl;
+
+            //open file for the user's mailbox that is logged in
+            ifstream fin(string(username + ".txt").c_str()); //file input object
+
+            if(!fin.is_open()) //check if the file opens or not
+            {
+                current_client.sendResponse(Status::SMTP_MBOX_UNAV, "No messages in your inbox."); //send back that there aren't any messages
+            } else
+            {
+                getline(fin, sendMessage); //get first line from file
+
+                while(!fin.eof()) //until we read in a single period from the file
+                {
+                    if(sendMessage == "") //if it doesn't have anything, then make it a newline because getline skips over it
+                        sendMessage = "\n";
+                    //send the line we got from the file and get another line
+                    current_client.sendData(sendMessage);
+                    getline(fin, sendMessage);
+
+                    //wait a little bit so the client can definitely get the message correctly
+                    Sleep(5); //sleep for 100 milliseconds
+                }
+
+                current_client.sendData("EOF"); //send to the client that we're at the eof
+            }
 
         }
 

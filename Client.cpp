@@ -88,6 +88,9 @@ int main(int argc, char * argv[])
         cin >> option;
 
         string recipient; //will hold the recipient
+        int messageCount = 0; //will count how many messages we have received. for formatting purposes
+        int lineCount = 0; //will count how many lines per message were sent. needed to know when to data is being sent
+        string messBuf = ""; //will hold the entire message and act as a buffer before printing it
 
         switch(option)
         {
@@ -168,25 +171,72 @@ int main(int argc, char * argv[])
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                     break; //break if we found an error
 
-                sockClient.recvData(recMessage); //get the first email message
+                //print a newline for formatting
+                cout << endl << endl;
 
-                while(recMessage != ".") //while the server doesn't send a single period, keep getting and outputting email messages
+                sockClient.recvData(recMessage); //get the first part of the email message
+                
+                while(recMessage != "EOF")
                 {
-                   
-		    		//split the message into the parts we need
-		    		vector<string> message;                    
-		    		sockClient.split(&message, recMessage, ",\"");
-	
-                    //print information
-                    cout << "Time: " << message[0].substr(1, message[0].length()-2) << endl; //print timestamp with date
-                    cout << "To: " << message[1].substr(1, message[1].length()-2) << endl; //print who the message was to
-                    cout << "From: " << message[2].substr(1, message[2].length()-2) << endl; //print who the message was from
-                    cout << "Message Body: \n" << sockClient.decrypt(message[3].substr(1, message[3].length()-2)); //decrypt and print the message
+                    //cout << "recMessage: " << recMessage << endl;
+                    lineCount++;
+                    if(recMessage == ".") //if the last message sent was a period, that's the entire email and we can print it out
+                    {
+                        if(messageCount > 0) //if this isn't the first message, print a message separator
+                            cout << "\n**********************************************\n\n";
 
-                    sockClient.recvData(recMessage); //get the next email message
+                        messageCount++; //increment message count
+                        lineCount = 0; //reset line count
+
+                        //print out the message and reset the message buffer string
+                        cout << messBuf << endl;
+                        messBuf = "";
+                    } else
+                    {
+                        switch(lineCount)
+                        {
+                            case 1: //timestamp
+                                messBuf += "Time: " + recMessage + "\n"; //add what the server sent to the message buffer string
+                                break;
+                            case 2: //to
+                                messBuf += "To: " + recMessage + "\n"; //add what the server sent to the message buffer string
+                                break;
+                            case 3: //from
+                                messBuf += "From: " + recMessage + "\n\n"; //add what the server sent to the message buffer string
+                                break;
+                            default: //data/message body
+                                messBuf += sockClient.decrypt(recMessage); //decrypt cuz we're at the data part
+
+                                if(recMessage != "\n") //if it's not a newline character, add one
+                                    messBuf += "\n";
+                                break;
+                        }
+                        // if(lineCount < 4) //if we're not at the data part yet, don't decrypt
+                        //     messBuf += recMessage; //add what the server sent to the message buffer string
+                        // else
+                        //     messBuf += sockClient.decrypt(recMessage); //decrypt cuz we're at the data part
+                    }
+
+                    sockClient.recvData(recMessage); //get the next part of the email message
                 }
+
+        //         while(recMessage != ".") //while the server doesn't send a single period, keep getting and outputting email messages
+        //         {
+                   
+		    		// //split the message into the parts we need
+		    		// vector<string> message;
+		    		// sockClient.split(&message, recMessage, ",\"");
+	
+        //             //print information
+        //             cout << "Time: " << message[0].substr(1, message[0].length()-2) << endl; //print timestamp with date
+        //             cout << "To: " << message[1].substr(1, message[1].length()-2) << endl; //print who the message was to
+        //             cout << "From: " << message[2].substr(1, message[2].length()-2) << endl; //print who the message was from
+        //             cout << "Message Body: \n" << sockClient.decrypt(message[3].substr(1, message[3].length()-2)); //decrypt & print the message
+
+        //             sockClient.recvData(recMessage); //get the next email message
+        //         }
 				
-                cout << "End of the inbox!\n"; //letting the client know it's the end of their inbox
+                cout << "End of the inbox!\n\n"; //letting the client know it's the end of their inbox
                 break;
             case 3: //option 3, to quit
                 //code
