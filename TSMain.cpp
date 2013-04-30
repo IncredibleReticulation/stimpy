@@ -166,7 +166,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
         else if(recMessage.substr(0,5) == "INBOX") //if they send an inbox and want to check their inbox
         {
-            current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //send 250 OK so they know we got the command okay, then send mail
             cout << "client sent: " << recMessage << endl;
 
             //open file for the user's mailbox that is logged in
@@ -177,6 +176,8 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 current_client.sendResponse(Status::SMTP_MBOX_UNAV, "No messages in your inbox."); //send back that there aren't any messages
             } else
             {
+                current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //send 250 OK so they know we got the command okay then send mail
+
                 getline(fin, sendMessage); //get first line from file
 
                 while(!fin.eof()) //until we read in a single period from the file
@@ -188,7 +189,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     getline(fin, sendMessage);
 
                     //wait a little bit so the client can definitely get the message correctly
-                    Sleep(5); //sleep for 100 milliseconds
+                    Sleep(5); //sleep for 5 milliseconds
                 }
 
                 current_client.sendData("EOF"); //send to the client that we're at the eof
