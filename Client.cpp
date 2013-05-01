@@ -18,7 +18,7 @@ int main(int argc, char * argv[])
 {
     if(argc != 3)
     {
-        cout << "USAGE: " << argv[0] << " servername(ip) portnum (usually 25)" << endl;
+        cout << "USAGE: " << argv[0] << " servername(ip) portnum (usually 31000)" << endl;
         return 1;
     }
 
@@ -109,7 +109,7 @@ int main(int argc, char * argv[])
                     
 
                 //get recipient of the email
-                cout << "Enter the recipient's email address: "; //prompts for recipient
+                cout << "Enter the recipient's email address (username@123.123.123.123): "; //prompts for recipient
                 cin >> recipient; //get the recipient
 
                 //send recipient of the email
@@ -172,7 +172,7 @@ int main(int argc, char * argv[])
                     break; //break if we found an error
 
                 //print a newline for formatting
-                cout << endl << endl;
+                cout << endl << "Your mailbox\n\n";
 
                 sockClient.recvData(recMessage); //get the first part of the email message
                 
