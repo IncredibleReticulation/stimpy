@@ -167,13 +167,14 @@ int main(int argc, char * argv[])
                 sockClient.sendData("INBOX"); //send the inbox command
                 sockClient.recvData(recMessage); //await a reply with a status code from the server
 
+                
                 //check for an error; should be a 250
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                     break; //break if we found an error
 
                 //print a newline for formatting
                 cout << endl << "Your mailbox\n\n";
-
+                sockClient.sendData("OK");
                 sockClient.recvData(recMessage); //get the first part of the email message
                 
                 while(recMessage != "EOF")
