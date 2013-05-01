@@ -14,15 +14,37 @@
 
 using namespace std;
 
-string sSrvrIP;
-// our thread for recving commands
+string sSrvrIP; //global variable which holds the IP address of the server
+
+//our thread for FIFO reading and message relaying
+DWORD WINAPI relayMail(LPVOID lpParam)
+{
+    cout << "FIFO Thread Created\n";
+
+    /*******************************************************************************************************************************
+    *                                                                                                                                   *
+    *   I'm pretty sure we'll need to have a sockclient instance here which means we'll need to include clientsocket.h...kinda nasty    *
+    *                                                                                                                                   *
+    ********************************************************************************************************************************/
+
+    //create a threadsock object and set our socket to the socket passed in as a parameter
+    ThreadSock fifoClient;
+    fifoClient.setSock((SOCKET)lpParam);
+
+    string recMessage = ""; //will hold the command the client sent
+    string sendMessage = ""; //will hold the reply we send
+
+    //file input object to read stuff in from the message fifo queue
+    ifstream fin("email.fifo");
+}
+
+//our thread for client connections
 DWORD WINAPI handleMail(LPVOID lpParam)
 {
-    cout << "Thread Created\n";
+    cout << "Email Thread Created\n";
 
     //set our socket to the socket passed in as a parameter
     ThreadSock current_client;
-
     current_client.setSock((SOCKET)lpParam);
 
     string recMessage = ""; //will hold the command the client sent
@@ -41,7 +63,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 			current_client.sendData(Status::SMTP_ACTION_COMPLETE); //send back 250 that it's good
 			cout << "Connection Successful. We received a HELO from the client.\n";
 			bHeloSent = TRUE;
-
 		}
 		else //if it's not HELO, return error code
 		{
