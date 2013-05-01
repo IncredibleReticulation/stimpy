@@ -28,6 +28,8 @@ int main(int argc, char * argv[])
     string sendMessage; //message it sends
     string username = ""; //will hold username
     int serverFlop = 0; //will hold value given by recv function and will be -1 if the server flops and shuts down
+    string ip = ""; 
+    string rcpAfter = "";
 
     //print that we're attempting to connect
     cout << "Connecting to: " << ipAddress << ":" << port << endl;
@@ -111,6 +113,12 @@ int main(int argc, char * argv[])
                 //get recipient of the email
                 cout << "Enter the recipient's email address (username@123.123.123.123): "; //prompts for recipient
                 cin >> recipient; //get the recipient
+
+                ip = recipient.substr(recipient.find("@")+1);
+
+                sockclient.sendData(ip);
+
+                rcpAfter = recipient.substr(0, recipient.length()-ip.length()-1);
 
                 //send recipient of the email
                 sendMessage = "RCPT TO:<" + recipient + ">"; //set what we're sending
