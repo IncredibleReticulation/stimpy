@@ -178,7 +178,7 @@ int main(int argc, char * argv[])
                 
                 while(recMessage != "EOF")
                 {
-                    //cout << "recMessage: " << recMessage << endl;
+                    sockClient.sendData("OK");
                     lineCount++;
                     if(recMessage == ".") //if the last message sent was a period, that's the entire email and we can print it out
                     {

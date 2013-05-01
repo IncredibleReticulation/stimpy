@@ -182,6 +182,11 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                 while(!fin.eof()) //until we read in a single period from the file
                 {
+                    clientFlop = current_client.recvData(recMessage); //get the OK from the client
+
+                    if(clientFlop == -1) //check to see if they actually sent a message and break if they didn't
+                        break;
+
                     if(sendMessage == "") //if it doesn't have anything, then make it a newline because getline skips over it
                         sendMessage = "\n";
                     //send the line we got from the file and get another line
