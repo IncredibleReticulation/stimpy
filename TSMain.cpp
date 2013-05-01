@@ -97,17 +97,22 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             else
             {
                 cout << "Client Send: " << recMessage << endl; //for debugging
-                sRecipient = recMessage.substr(9, recMessage.find("@")-9);
+                //sRecipient = recMessage.substr(9, recMessage.find("@")-9);
+                sRecipient = recMessage.substr(9, recMessage.length()-10);
                 string sSrvrT = recMessage.substr(recMessage.find("@")+1);
                 string sSrvr = sSrvrT.substr(0, sSrvrT.length()-1);
                 cout << "User server: " << sSrvr << endl;
                 //cout << "recipient username: " << recMessage.substr(9, recMessage.find("@")-9) << endl; //for debugging
                 //checking to see if the user is valid
-                if (!current_client.validateUser(sRecipient) && (sSrvr == "127.0.0.1" || sSrvr == sSrvrIP || sSrvr == ""))
+                bool bLocalDelivery = FALSE;
+
+                if ((sSrvr == "127.0.0.1" || sSrvr == sSrvrIP || sSrvr == ""))
                 {
-                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient");
+                    bLocalDelivery = TRUE;
+                    
                 }
-                //sending back a bad error code
+                if(bLocalDelivery && !current_client.validateUser(sRecipient.substr(0,sRecipient.find("@"))))
+                        current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient"); //sending back a bad error code
                 else
                 {
                     current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK");//if the username was valid, send back 250
@@ -129,7 +134,10 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         //get the data of the message part
                         //create file output object and open it in append mode
                         ofstream fout;
-                        fout.open ((string(sRecipient + ".txt")).c_str(), ios::app);
+                        if(bLocalDelivery)
+                            fout.open ((string(sRecipient.substr(0,sRecipient.find("@") + ".txt")).c_str(), ios::app);
+                        else
+                            fout.open("email.fifo", ios::app);
 
                         //write the initial part of the email
                         //fout << "\"" << current_client.getDateTime() << "\",\"" << sRecipient << "\",\"" << username << "\",\"";
