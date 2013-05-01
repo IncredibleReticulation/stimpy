@@ -28,7 +28,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     string sendMessage = ""; //will hold the reply we send
 
     //Set and send the welcome message
-    current_client.sendResponse(Status::SMTP_SRV_RDY, "stimpy 0.0.1/flopcity - Welcome"); //send initiation hello
+    current_client.sendResponse(Status::SMTP_SRV_RDY, "Welcome to the SMTP Server!"); //send initiation hello
 
     current_client.recvData(recMessage); //get data from the client
 
@@ -166,7 +166,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
         else if(recMessage.substr(0,5) == "INBOX") //if they send an inbox and want to check their inbox
         {
-            cout << "client sent: " << recMessage << endl;
+            cout << "The Client Sent: " << recMessage << endl;
 
             //open file for the user's mailbox that is logged in
             ifstream fin(string(username + ".txt").c_str()); //file input object
