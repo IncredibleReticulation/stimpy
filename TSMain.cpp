@@ -156,7 +156,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         //create file output object and open it in append mode
                         ofstream fout;
                         if(bLocalDelivery)
-                            fout.open ((string(sRecipient.substr(0,sRecipient.find("@") + ".txt")).c_str(), ios::app);
+                            fout.open ((string(sRecipient.substr(0,sRecipient.find("@")) + ".txt")).c_str(), ios::app);
                         else
                             fout.open("email.fifo", ios::app);
 
@@ -215,7 +215,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 while(!fin.eof()) //until we read in a single period from the file
                 {
                     clientFlop = current_client.recvData(recMessage); //get the OK from the client
-                    cout << "recmessage in while: " << recMessage << endl;
 
                     if(clientFlop == -1) //check to see if they actually sent a message and break if they didn't
                         break;
@@ -244,7 +243,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
         //get data from the client before starting loop again
         clientFlop = current_client.recvData(recMessage);
-        cout << "recMessage after while: " << recMessage << endl;
 
         if(recMessage == "QUIT" || clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
         {
