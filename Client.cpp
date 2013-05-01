@@ -167,7 +167,7 @@ int main(int argc, char * argv[])
                 sockClient.sendData("INBOX"); //send the inbox command
                 sockClient.recvData(recMessage); //await a reply with a status code from the server
 
-                
+
                 //check for an error; should be a 250
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                     break; //break if we found an error
@@ -179,7 +179,9 @@ int main(int argc, char * argv[])
                 
                 while(recMessage != "EOF")
                 {
-                    sockClient.sendData("OK");
+                    if(recMessage != "EOF")
+                        sockClient.sendData("OK");
+                    
                     lineCount++;
                     if(recMessage == ".") //if the last message sent was a period, that's the entire email and we can print it out
                     {
@@ -219,7 +221,10 @@ int main(int argc, char * argv[])
                     }
 
                     sockClient.recvData(recMessage); //get the next part of the email message
+
                 }
+
+
 
         //         while(recMessage != ".") //while the server doesn't send a single period, keep getting and outputting email messages
         //         {
