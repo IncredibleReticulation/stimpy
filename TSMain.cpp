@@ -14,6 +14,7 @@
 
 using namespace std;
 
+string sSrvrIP;
 // our thread for recving commands
 DWORD WINAPI handleMail(LPVOID lpParam)
 {
@@ -102,7 +103,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 cout << "User server: " << sSrvr << endl;
                 //cout << "recipient username: " << recMessage.substr(9, recMessage.find("@")-9) << endl; //for debugging
                 //checking to see if the user is valid
-                if (!current_client.validateUser(sRecipient))
+                if (!current_client.validateUser(sRecipient) && (sSrvr == "127.0.0.1" || sSrvr == sSrvrIP || sSrvr == ""))
                 {
                     current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient");
                 }
@@ -225,8 +226,13 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     } //end of while
 }
 
-int main()
+int main(int argc, char * argv[])
 {
+    if(argc != 2)
+    {
+        cout << "Usage: " << argv[0] << " <listening IP>" << endl;
+        return -69;
+    }
     cout << "Starting up multi-threaded SMTP server\n";
 
     //our masterSocket(socket that listens for connections)
@@ -242,6 +248,7 @@ int main()
         return 0;
     }
 
+    sSrvrIP = string(argv[1]);
     //fill in winsock struct ...
     server.sin_family=AF_INET;
     server.sin_addr.s_addr=INADDR_ANY;
