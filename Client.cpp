@@ -109,7 +109,7 @@ int main(int argc, char * argv[])
                     
 
                 //get recipient of the email
-                cout << "Enter the recipient's email address (username@123.123.123.123): "; //prompts for recipient
+                cout << "Enter the recipient's email address (user@1.2.3.4): "; //prompts for recipient
                 cin >> recipient; //get the recipient
 
                 //send recipient of the email
