@@ -97,7 +97,9 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             {
                 cout << "Client Send: " << recMessage << endl; //for debugging
                 sRecipient = recMessage.substr(9, recMessage.find("@")-9);
-
+                string sSrvrT = recMessage.substr(recMessage.find("@")+1);
+                string sSrvr = sSrvrT.substr(0, sSrvrT.length()-1);
+                cout << "User server: " << sSrvr << endl;
                 //cout << "recipient username: " << recMessage.substr(9, recMessage.find("@")-9) << endl; //for debugging
                 //checking to see if the user is valid
                 if (!current_client.validateUser(sRecipient))
