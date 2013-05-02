@@ -123,7 +123,7 @@ int main(int argc, char * argv[])
                     cout << recMessage << endl;
                     break; //break if we found one
                 }
-                    
+
 
                 //send data to the server and get a response
                 sockClient.sendData("DATA"); //send that we're ready to send data
@@ -146,8 +146,7 @@ int main(int argc, char * argv[])
                     if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
                         sendMessage = "\n";
 
-                    if(sendMessage != ".")
-                        sendMessage = sockClient.encrypt(sendMessage); //encrypt the message before we send it to the server
+                    sendMessage = (sendMessage != "." ? sockClient.encrypt(sendMessage) : sendMessage);
 
                     sockClient.sendData(sendMessage); //send the data
                 }
