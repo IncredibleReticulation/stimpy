@@ -72,7 +72,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
         if(recMessage.substr(0,3) == "250") //send the login information as long as we got a 250 from the server first
         {
             //sendMessage = "VRFY " + message[2].substr(0, message[2].find("@"));
-            sendMessage = "VRFY " + "guest"; //login using guest account
+            sendMessage = "VRFY guest"; //login using guest account
             fifoClient.sendData(sendMessage);
         }
 
@@ -86,7 +86,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
         }
 
         //send the message in the fifo queue
-        sendMessage = "MAIL FROM:<" + message[2] +>;
+        sendMessage = "MAIL FROM:<" + message[2] + ">";
         fifoClient.sendData(sendMessage); //send the mail from command to the server
         serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
 
