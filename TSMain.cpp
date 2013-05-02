@@ -134,7 +134,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
         serverFlop = fifoClient.recvData(recMessage); //get data from server
 
-        //check for an error
+        //check for an error, if there was an error we need to try this entire loop again
         if(fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
             cout << "Message sent successfully! :)\n\n";
         else
