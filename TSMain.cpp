@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cctype>
 #include "ThreadSock.h"
+#include "ClientSocket.h"
 #include "Status.h"
 
 using namespace std;
@@ -21,21 +22,125 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 {
     cout << "FIFO Thread Created\n";
 
-    /*******************************************************************************************************************************
-    *                                                                                                                                   *
-    *   I'm pretty sure we'll need to have a sockclient instance here which means we'll need to include clientsocket.h...kinda nasty    *
-    *                                                                                                                                   *
-    ********************************************************************************************************************************/
-
     //create a threadsock object and set our socket to the socket passed in as a parameter
-    ThreadSock fifoClient;
-    fifoClient.setSock((SOCKET)lpParam);
+    // ThreadSock fifoClient;
+    // fifoClient.setSock((SOCKET)lpParam);
+    ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
 
     string recMessage = ""; //will hold the command the client sent
     string sendMessage = ""; //will hold the reply we send
+    vector<string> message;
+    string line = ""; //will hold each line we read in from the file
+    int serverFlop = 0; //will hold value given by recv function and will be -1 if the server flops and shuts down
+    ifstream fin; //file input object to read stuff in from the message fifo queue
 
-    //file input object to read stuff in from the message fifo queue
-    ifstream fin("email.fifo");
+    /****************************************
+    * we'll probably need a while loop right here to keep trying to open email.fifo if it fails to open. if it fails to open there aren't
+    * any messages in the "fifo queue" yet.
+    ******************************************/
+    
+    fin.open("email.fifo"); //open the email.fifo file
+
+    if(!fin.is_open())
+    {
+        cout << "no email.fifo file...\n";
+        Sleep(100); //wait a little while before trying to open the file again
+    }
+    else
+    {
+        getline(fin, line); //get the first line from the file
+
+        while(line != ".") //while we don't read in a period, keep going. period denotes the end of a message
+        {
+            message.push_back(line); //add the lines to the vector that will hold the message
+            getline(fin, line); //get the next line
+        }
+
+        fin.close(); //close file; done reading stuff in
+
+        //connect to the server where the message should be going
+        fifoClient.connectToServer(message[1].substr(message[1].find("@")+1).c_str(), 31000);
+
+        //receive the first 220 message
+        serverFlop = fifoClient.recvData(recMessage);
+        if(recMessage.substr(0,3) == "220")
+        {
+            fifoClient.sendData("HELO 127.0.0.1");
+        }
+
+        serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+        if(recMessage.substr(0,3) == "250") //send the login information as long as we got a 250 from the server first
+        {
+            //sendMessage = "VRFY " + message[2].substr(0, message[2].find("@"));
+            sendMessage = "VRFY " + "guest"; //login using guest account
+            fifoClient.sendData(sendMessage);
+        }
+
+        serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+
+        if(recMessage == "550" || recMessage == "500") //if login fails, print error and end program
+        {
+            cout << "Invalid user...\n";
+            fifoClient.closeConnection(); //close connection
+            //break;
+        }
+
+        //send the message in the fifo queue
+        sendMessage = "MAIL FROM:<" + message[2] +>;
+        fifoClient.sendData(sendMessage); //send the mail from command to the server
+        serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+
+        //check for an error
+        if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+        {
+            cout << recMessage << endl;
+            //break; //break if we found one
+        }
+
+        sendMessage = "RCPT TO:<" + message[1] + ">"; //set what we're sending
+        fifoClient.sendData(sendMessage); //send data
+        serverFlop = fifoClient.recvData(recMessage); //get response
+
+        //check for an error
+        if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+        {
+            cout << recMessage << endl;
+            //break; //break if we found one
+        }
+
+        //send data command to the server and get a response
+        fifoClient.sendData("DATA"); //send that we're ready to send data
+        serverFlop = fifoClient.recvData(recMessage); //get the response
+
+        //check for an error
+        if(!fifoClient.checkError(recMessage, Status::SMTP_BEGIN_MSG))
+        {    
+            //break; //break if we found one
+        }
+
+        int index = 3; //the position of message we should get data from
+        while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
+        {
+            sendMessage = message[index];
+
+            if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
+                sendMessage = "\n";
+
+            // if(sendMessage != ".")
+            //     sendMessage = sockClient.encrypt(sendMessage); //encrypt the message before we send it to the server
+
+            fifoClient.sendData(sendMessage); //send the data, it's already encrypted
+        }
+
+        serverFlop = fifoClient.recvData(recMessage); //get data from server
+
+        //check for an error
+        if(fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+            cout << "Message sent successfully! :)\n\n";
+        else
+            cerr << "Error sending message. Please retry in a few minutes. :(\n\n";
+    }
+
 }
 
 //our thread for client connections
