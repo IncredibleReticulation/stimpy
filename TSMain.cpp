@@ -15,6 +15,15 @@
 
 using namespace std;
 
+/*********************************************************************************************************************************
+    READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS 
+*
+*   Somebody should do the mutex in class. Buie said he'd do it, but he doesn't always come to class ;]
+*   but pe8 producerconsumer should have a good example with a mutex and text files. go team! 69
+*
+    READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS 
+*********************************************************************************************************************************/
+
 string sSrvrIP; //global variable which holds the IP address of the server
 
 //our thread for FIFO reading and message relaying - doesn't need a parameter passed in at this point
