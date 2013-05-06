@@ -38,9 +38,11 @@ DWORD WINAPI relayMail(LPVOID lpParam)
     while(true) //endless loop to open the fifo file and send the email in it
     {
         //see: http://msdn.microsoft.com/en-us/library/ms687032%28v=vs.85%29.aspx
+        //cout << "before wait in fifo thread\n";
         dwWaitResult = WaitForSingleObject( 
             mailMutex,    // handle to mutex
             INFINITE);  // no time-out interval
+        //cout << "after wait in fifo thread\n";
 
         if(dwWaitResult == WAIT_OBJECT_0) //if we have ownership of the mutex
         {
@@ -164,7 +166,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                 } //end of the sending while
             } //end of the else
         } //end of the if checking the mutex result
-        
+
         Sleep(1000); //wait a little while before trying to open the file again
     } //end of the entire while loop
 
@@ -302,14 +304,20 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                             fout.open ((string(sRecipient.substr(0,sRecipient.find("@")) + ".txt")).c_str(), ios::app);
                         else //if on a different server and needs to be relayed
                         {
+                            cout << "before while loop\n";
                             while(!isOwned)
                             {
+                                //cout << "after while loop, before wait call\n";
+                                //IT BREAKS WHEN RIGHT HERE. it never gets to the cout after calling this function to wait IDK why dad
                                 dwWaitResult = WaitForSingleObject(
                                     mailMutex,    // handle to mutex
                                     INFINITE);   // no time-out interval
 
+                                //cout << "after waiting for single object\n";
+
                                 if(dwWaitResult == WAIT_OBJECT_0)
                                 {
+                                    cout << "in if inside of while\n";
                                     fout.open("email.fifo", ios::app);
                                     isOwned = true;
                                 }
