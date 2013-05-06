@@ -25,6 +25,7 @@ using namespace std;
 *********************************************************************************************************************************/
 
 string sSrvrIP; //global variable which holds the IP address of the server
+HANDLE mailMutex; //Golbal Mutex Variable
 
 //our thread for FIFO reading and message relaying - doesn't need a parameter passed in at this point
 DWORD WINAPI relayMail(LPVOID lpParam)
@@ -33,6 +34,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
     //create a threadsock object and set our socket to the socket passed in as a parameter
     ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
+    DWORD dwWaitResult;     //wait for instance
 
     string recMessage = ""; //will hold the command the client sent
     string sendMessage = ""; //will hold the reply we send
@@ -45,6 +47,11 @@ DWORD WINAPI relayMail(LPVOID lpParam)
     while(true) //endless loop to open the fifo file and send the email in it
     {
         fin.open("email.fifo"); //open the email.fifo file
+
+        //see: http://msdn.microsoft.com/en-us/library/ms687032%28v=vs.85%29.aspx
+        dwWaitResult = WaitForSingleObject( 
+            mailMutex,    // handle to mutex
+            INFINITE);  // no time-out interval
 
         if(!fin.is_open())
         {
@@ -162,6 +169,8 @@ DWORD WINAPI relayMail(LPVOID lpParam)
             } //end of the sending while
 
             remove("email.fifo"); //remove the file after we're done with it
+            ReleaseMutex(mailMutex); //Release the Mutex from the thread
+
         } //end of the else
     } //end of the entire while loop
 
@@ -175,6 +184,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     //set our socket to the socket passed in as a parameter
     ThreadSock current_client;
     current_client.setSock((SOCKET)lpParam);
+    DWORD dwWaitResult;     //wait for instance
 
     string recMessage = ""; //will hold the command the client sent
     string sendMessage = ""; //will hold the reply we send
@@ -279,6 +289,10 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     clientFlop = current_client.recvData(recMessage); //getting more data from client
                     //cout << "after recvdata " << recMessage << endl;
 
+                    dwWaitResult = WaitForSingleObject( 
+                        mailMutex,    // handle to mutex
+                        INFINITE);   // no time-out interval
+
                     //checking to see if the string is DATA
                     if (recMessage.substr(0,6) != "DATA")
                     {
@@ -326,6 +340,8 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         //send status code that action is complete and close the file
                         current_client.sendData(Status::SMTP_ACTION_COMPLETE);
                         fout.close();
+
+                        ReleaseMutex(mailMutex); //Release the mutex from the thread
                     }
                 }
             }
@@ -445,6 +461,11 @@ int main(int argc, char * argv[])
     sockaddr_in from;
     int fromlen = sizeof(from);
 
+    mailMutex = CreateMutex( 
+        NULL,              // default security attributes
+        FALSE,             // initially not owned
+        NULL);             // unnamed mutex
+
     //loop forever
     while(true)
     {
@@ -456,6 +477,7 @@ int main(int argc, char * argv[])
     }
 
     WSACleanup(); //windows cleanup
+    CloseHandle(mailMutex); //Close the Handle for Mutex
 
     return 0; //ends program
 }
