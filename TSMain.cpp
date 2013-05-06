@@ -46,132 +46,135 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
     while(true) //endless loop to open the fifo file and send the email in it
     {
-        fin.open("email.fifo"); //open the email.fifo file
-
         //see: http://msdn.microsoft.com/en-us/library/ms687032%28v=vs.85%29.aspx
         dwWaitResult = WaitForSingleObject( 
             mailMutex,    // handle to mutex
             INFINITE);  // no time-out interval
 
-        if(!fin.is_open())
+        if(dwWaitResult == WAIT_OBJECT_0) //if we have ownership of the mutex
         {
-            cout << "no email.fifo file...\n";
-            Sleep(100); //wait a little while before trying to open the file again
-        }
-        else
-        {
-            while(!isSent)
+            fin.open("email.fifo"); //open the email.fifo file
+
+            if(!fin.is_open())
             {
-                getline(fin, line); //get the first line from the file
-
-                while(line != ".") //while we don't read in a period, keep going. period denotes the end of a message
+                cout << "no email.fifo file...\n";
+                Sleep(10); //wait a little while before trying to open the file again
+            }
+            else
+            {
+                while(!isSent)
                 {
-                    message.push_back(line); //add the lines to the vector that will hold the message
-                    getline(fin, line); //get the next line
-                }
+                    getline(fin, line); //get the first line from the file
 
-                fin.close(); //close file; done reading stuff in
+                    while(line != ".") //while we don't read in a period, keep going. period denotes the end of a message
+                    {
+                        message.push_back(line); //add the lines to the vector that will hold the message
+                        getline(fin, line); //get the next line
+                    }
 
-                //connect to the server where the message should be going
-                fifoClient.connectToServer(message[1].substr(message[1].find("@")+1).c_str(), 31000);
+                    fin.close(); //close file; done reading stuff in
 
-                //receive the first 220 message
-                serverFlop = fifoClient.recvData(recMessage);
-                if(recMessage.substr(0,3) == "220")
-                {
-                    fifoClient.sendData("HELO 127.0.0.1");
-                }
+                    //connect to the server where the message should be going
+                    fifoClient.connectToServer(message[1].substr(message[1].find("@")+1).c_str(), 31000);
 
-                serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
-                if(recMessage.substr(0,3) == "250") //send the login information as long as we got a 250 from the server first
-                {
-                    //sendMessage = "VRFY " + message[2].substr(0, message[2].find("@"));
-                    sendMessage = "VRFY guest"; //login using guest account
-                    fifoClient.sendData(sendMessage);
-                }
+                    //receive the first 220 message
+                    serverFlop = fifoClient.recvData(recMessage);
+                    if(recMessage.substr(0,3) == "220")
+                    {
+                        fifoClient.sendData("HELO 127.0.0.1");
+                    }
 
-                serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+                    serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+                    if(recMessage.substr(0,3) == "250") //send the login information as long as we got a 250 from the server first
+                    {
+                        //sendMessage = "VRFY " + message[2].substr(0, message[2].find("@"));
+                        sendMessage = "VRFY guest"; //login using guest account
+                        fifoClient.sendData(sendMessage);
+                    }
 
-                if(recMessage == "550" || recMessage == "500") //if login fails, print error and end program
-                {
-                    cout << "Invalid user...\n";
-                    fifoClient.closeConnection(); //close connection
-                    //break;
-                }
+                    serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
 
-                //send the message in the fifo queue
-                sendMessage = "MAIL FROM:<" + message[2] + ">";
-                fifoClient.sendData(sendMessage); //send the mail from command to the server
-                serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+                    if(recMessage == "550" || recMessage == "500") //if login fails, print error and end program
+                    {
+                        cout << "Invalid user...\n";
+                        fifoClient.closeConnection(); //close connection
+                        //break;
+                    }
 
-                //check for an error
-                if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
-                {
-                    cout << recMessage << endl;
-                    //break; //break if we found one
-                }
+                    //send the message in the fifo queue
+                    sendMessage = "MAIL FROM:<" + message[2] + ">";
+                    fifoClient.sendData(sendMessage); //send the mail from command to the server
+                    serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
 
-                sendMessage = "RCPT TO:<" + message[1] + ">"; //set what we're sending
-                fifoClient.sendData(sendMessage); //send data
-                serverFlop = fifoClient.recvData(recMessage); //get response
+                    //check for an error
+                    if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                    {
+                        cout << recMessage << endl;
+                        //break; //break if we found one
+                    }
 
-                //check for an error
-                if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
-                {
-                    cout << recMessage << endl;
-                    //break; //break if we found one
-                }
+                    sendMessage = "RCPT TO:<" + message[1] + ">"; //set what we're sending
+                    fifoClient.sendData(sendMessage); //send data
+                    serverFlop = fifoClient.recvData(recMessage); //get response
 
-                //send data command to the server and get a response
-                fifoClient.sendData("DATA"); //send that we're ready to send data
-                serverFlop = fifoClient.recvData(recMessage); //get the response
+                    //check for an error
+                    if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                    {
+                        cout << recMessage << endl;
+                        //break; //break if we found one
+                    }
 
-                //check for an error
-                if(!fifoClient.checkError(recMessage, Status::SMTP_BEGIN_MSG))
-                {
-                    cout << recMessage << endl;
-                    //break; //break if we found one
-                }
+                    //send data command to the server and get a response
+                    fifoClient.sendData("DATA"); //send that we're ready to send data
+                    serverFlop = fifoClient.recvData(recMessage); //get the response
 
-                int index = 3; //the position of message we should get data from
-                while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
-                {
-                    sendMessage = message[index];
+                    //check for an error
+                    if(!fifoClient.checkError(recMessage, Status::SMTP_BEGIN_MSG))
+                    {
+                        cout << recMessage << endl;
+                        //break; //break if we found one
+                    }
 
-                    if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
-                        sendMessage = "\n";
+                    int index = 3; //the position of message we should get data from
+                    while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
+                    {
+                        sendMessage = message[index];
 
-                    fifoClient.sendData(sendMessage); //send the data, it's already encrypted
-                    index++; //increment the index so we can get the next part of the message
-                }
+                        if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
+                            sendMessage = "\n";
 
-                serverFlop = fifoClient.recvData(recMessage); //get data from server
+                        fifoClient.sendData(sendMessage); //send the data, it's already encrypted
+                        index++; //increment the index so we can get the next part of the message
+                    }
 
-                //check for an error, if there was an error we need to try this entire loop again
-                if(fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
-                {
-                    cout << "Message sent successfully! :)\n\n";
-                    isSent = true;
-                }
-                else
-                {
-                    cerr << "Error sending message. Please retry in a few minutes. :(\n\n";
-                    isSent = false;
-                }
+                    serverFlop = fifoClient.recvData(recMessage); //get data from server
 
-                if(serverFlop == -1) //if the server disconnects unexpectedly break from the while loop
-                {
-                    isSent = false;
-                    //break; //not sure if we want to break from the while loop or not, because then the message will not be sent and the file
-                            //will be deleted without being sent anywhere. maybe we should write it to another text file if doesn't send? idk
-                }
+                    //check for an error, if there was an error we need to try this entire loop again
+                    if(fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                    {
+                        cout << "Message sent successfully! :)\n\n";
+                        isSent = true;
+                    }
+                    else
+                    {
+                        cerr << "Error sending message. Please retry in a few minutes. :(\n\n";
+                        isSent = false;
+                    }
 
-            } //end of the sending while
+                    if(serverFlop == -1) //if the server disconnects unexpectedly break from the while loop
+                    {
+                        isSent = false;
+                        //break; //not sure if we want to break from the while loop or not, because then the message will not be sent and the file
+                                //will be deleted without being sent anywhere. maybe we should write it to another text file if doesn't send? idk
+                    }
 
-            remove("email.fifo"); //remove the file after we're done with it
-            ReleaseMutex(mailMutex); //Release the Mutex from the thread
+                } //end of the sending while
 
-        } //end of the else
+                remove("email.fifo"); //remove the file after we're done with it
+                ReleaseMutex(mailMutex); //Release the Mutex from the thread
+
+            } //end of the else
+        } //end of the if checking the mutex result
     } //end of the entire while loop
 
 }
@@ -276,16 +279,16 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 {
                     bLocalDelivery = TRUE; 
                 }
-                if (isGuest && !bLocalDelivery) //if the guest account tries to send an email to a user not on our server
-                {
-                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Guest doesn't have permission to send emails to outside servers."); //sending back a bad error code
-                }
+
+                if (isGuest && !bLocalDelivery) //if the guest account tries to send an email to a user not on our server, send bad error code
+                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Guest doesn't have permission to send emails to outside servers.");
+
                 if(bLocalDelivery && !current_client.validateUser(sRecipient.substr(0,sRecipient.find("@"))))
                     current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient"); //sending back a bad error code
        
                 else
                 {
-                    current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK");//if the username was valid, send back 250
+                    current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //if the username was valid, send back 250
                     bRecipientSent = TRUE;
 
                     //getting data and writing to file part
@@ -477,6 +480,9 @@ int main(int argc, char * argv[])
         NULL,              // default security attributes
         FALSE,             // initially not owned
         NULL);             // unnamed mutex
+
+    //create our fifo thread only once because it will loop continuously
+    CreateThread(NULL, 0,relayMail,(LPVOID)NULL, 0, &thread);
 
     //loop forever
     while(true)
