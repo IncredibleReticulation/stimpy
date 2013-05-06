@@ -178,6 +178,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
     string recMessage = ""; //will hold the command the client sent
     string sendMessage = ""; //will hold the reply we send
+    bool isGuest = false;
 
     //Set and send the welcome message
     current_client.sendResponse(Status::SMTP_SRV_RDY, "Welcome to the SMTP Server!"); //send initiation hello
@@ -213,6 +214,11 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         if (current_client.validateUser(username))
         {
             current_client.sendData(Status::SMTP_ACTION_COMPLETE); //if the username was valid, send back 250
+        }
+        else if (current_client.validateUser(username) == "guest" || "Guest" || "GUEST")//checking to see if the user account is guest
+        {
+            isGuest = true; //changing the value of the bool to true
+            current_client.sendData(Status::SMTP_ACTION_COMPLETE); 
         }
         else
         {
