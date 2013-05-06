@@ -57,7 +57,6 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
             if(!fin.is_open())
             {
-                cout << "no email.fifo file...\n";
                 Sleep(10); //wait a little while before trying to open the file again
             }
             else
