@@ -274,11 +274,15 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                 if ((sSrvr == "127.0.0.1" || sSrvr == sSrvrIP || sSrvr == ""))
                 {
-                    bLocalDelivery = TRUE;
-                    
+                    bLocalDelivery = TRUE; 
+                }
+                if (isGuest && !bLocalDelivery) //if the guest account tries to send an email to a user not on our server
+                {
+                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Guest doesn't have permission to send emails to outside servers."); //sending back a bad error code
                 }
                 if(bLocalDelivery && !current_client.validateUser(sRecipient.substr(0,sRecipient.find("@"))))
-                        current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient"); //sending back a bad error code
+                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient"); //sending back a bad error code
+       
                 else
                 {
                     current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK");//if the username was valid, send back 250
