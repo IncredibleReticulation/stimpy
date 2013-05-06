@@ -351,39 +351,47 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         {
             cout << "The Client Sent: " << recMessage << endl;
 
-            //open file for the user's mailbox that is logged in
-            ifstream fin(string(username + ".txt").c_str()); //file input object
-
-            if(!fin.is_open()) //check if the file opens or not
+            if (isGuest == true) //if isGuest is true, send an error and send error
             {
-                current_client.sendResponse(Status::SMTP_MBOX_UNAV, "No messages in your inbox."); //send back that there aren't any messages
-            } else
-            {
-                current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //send 250 OK so they know we got the command okay then send mail
-
-                getline(fin, sendMessage); //get first line from file
-
-                while(!fin.eof()) //until we read in a single period from the file
-                {
-                    clientFlop = current_client.recvData(recMessage); //get the OK from the client
-
-                    if(clientFlop == -1) //check to see if they actually sent a message and break if they didn't
-                        break;
-
-                    if(sendMessage == "") //if it doesn't have anything, then make it a newline because getline skips over it
-                        sendMessage = "\n";
-                    //send the line we got from the file and get another line
-                    current_client.sendData(sendMessage);
-                    getline(fin, sendMessage);
-
-                    //wait a little bit so the client can definitely get the message correctly
-                    //Sleep(5); //sleep for 5 milliseconds
-                }
-
-                current_client.sendData("EOF"); //send to the client that we're at the eof
-                current_client.recvData(recMessage); //get the final OK
+                current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "No mailbox on a guest account.");
             }
 
+            else
+            {
+                //open file for the user's mailbox that is logged in
+                ifstream fin(string(username + ".txt").c_str()); //file input object
+
+                if(!fin.is_open()) //check if the file opens or not
+                {
+                    current_client.sendResponse(Status::SMTP_MBOX_UNAV, "No messages in your inbox."); //send back that there aren't any messages
+                } else
+                {
+                    current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //send 250 OK so they know we got the command okay then send mail
+
+                    getline(fin, sendMessage); //get first line from file
+
+                    while(!fin.eof()) //until we read in a single period from the file
+                    {
+                        clientFlop = current_client.recvData(recMessage); //get the OK from the client
+
+                        if(clientFlop == -1) //check to see if they actually sent a message and break if they didn't
+                            break;
+
+                        if(sendMessage == "") //if it doesn't have anything, then make it a newline because getline skips over it
+                            sendMessage = "\n";
+                        //send the line we got from the file and get another line
+                        current_client.sendData(sendMessage);
+                        getline(fin, sendMessage);
+
+                        //wait a little bit so the client can definitely get the message correctly
+                        //Sleep(5); //sleep for 5 milliseconds
+                    }
+
+                    current_client.sendData("EOF"); //send to the client that we're at the eof
+                    current_client.recvData(recMessage); //get the final OK
+                }
+
+            }
         }
 
         else
