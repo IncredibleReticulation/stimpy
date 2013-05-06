@@ -15,15 +15,6 @@
 
 using namespace std;
 
-/*********************************************************************************************************************************
-    READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS 
-*
-*   Somebody should do the mutex in class. Buie said he'd do it, but he doesn't always come to class ;]
-*   but pe8 producerconsumer should have a good example with a mutex and text files. go team! 69
-*
-    READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS     READ THIS READ THIS 
-*********************************************************************************************************************************/
-
 string sSrvrIP; //global variable which holds the IP address of the server
 HANDLE mailMutex; //Golbal Mutex Variable
 
@@ -57,22 +48,25 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
             if(!fin.is_open())
             {
-                Sleep(10); //wait a little while before trying to open the file again
+                //Sleep(1000); //wait a little while before trying to open the file again
             }
             else
             {
+                getline(fin, line); //get the first line from the file
+
+                while(line != ".") //while we don't read in a period, keep going. period denotes the end of a message
+                {
+                    message.push_back(line); //add the lines to the vector that will hold the message
+                    getline(fin, line); //get the next line
+                }
+
+                fin.close(); //close file; done reading stuff in
+
+                remove("email.fifo"); //remove the file after we're done with it
+                ReleaseMutex(mailMutex); //release the mutex from the thread
+
                 while(!isSent)
                 {
-                    getline(fin, line); //get the first line from the file
-
-                    while(line != ".") //while we don't read in a period, keep going. period denotes the end of a message
-                    {
-                        message.push_back(line); //add the lines to the vector that will hold the message
-                        getline(fin, line); //get the next line
-                    }
-
-                    fin.close(); //close file; done reading stuff in
-
                     //connect to the server where the message should be going
                     fifoClient.connectToServer(message[1].substr(message[1].find("@")+1).c_str(), 31000);
 
@@ -168,12 +162,10 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                     }
 
                 } //end of the sending while
-
-                remove("email.fifo"); //remove the file after we're done with it
-                ReleaseMutex(mailMutex); //Release the Mutex from the thread
-
             } //end of the else
         } //end of the if checking the mutex result
+        
+        Sleep(1000); //wait a little while before trying to open the file again
     } //end of the entire while loop
 
 }
@@ -305,7 +297,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         //get the data of the message part
                         //create file output object and open it in append mode
                         ofstream fout;
-                        
+
                         if(bLocalDelivery) //if local
                             fout.open ((string(sRecipient.substr(0,sRecipient.find("@")) + ".txt")).c_str(), ios::app);
                         else //if on a different server and needs to be relayed
@@ -323,7 +315,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                                 }
                             }
                         }
-                            
 
                         //write the initial part of the email
                         //fout << "\"" << current_client.getDateTime() << "\",\"" << sRecipient << "\",\"" << username << "\",\"";
