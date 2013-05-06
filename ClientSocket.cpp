@@ -22,7 +22,7 @@ void ClientSocket::connectToServer(const char *ipAddress, int port)
     {
         cerr<<"ClientSocket: Failed to connect\n"; //error message
         WSACleanup(); //windows cleanup function
-        exit(13); //ends program
+        //exit(13); //ends program
     }
 }
 

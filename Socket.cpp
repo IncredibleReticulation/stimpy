@@ -15,7 +15,7 @@ Socket::Socket()
     {
         cerr<<"Socket Initialization: Error with WSAStartup\n"; //error message
         WSACleanup(); //windows clean up function
-        exit(10); //ends program
+        //exit(10); //ends program
     }
 
     //Create a socket
@@ -25,7 +25,7 @@ Socket::Socket()
     {
         cerr << "Socket Initialization: Error creating socket\n"; //error message
         WSACleanup(); //windows clean up function
-        exit(11); //ends program
+        //exit(11); //ends program
     }
 
     myBackup = mySocket; //backup our current socket for future use in case
