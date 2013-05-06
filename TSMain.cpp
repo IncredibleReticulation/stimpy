@@ -246,6 +246,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     while(recMessage != "QUIT" || recMessage != "Quit" || recMessage != "quit")
     {
 		bool bRecipientSent = FALSE;
+        bool isOwned = false; //will hold if the data has been sent and written to file
 		string sRecipient = "";
 
         if(recMessage.substr(0,9) == "MAIL FROM")
@@ -279,12 +280,10 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     bLocalDelivery = TRUE; 
                 }
 
-                if (isGuest && !bLocalDelivery) //if the guest account tries to send an email to a user not on our server, send bad error code
+                if(isGuest && !bLocalDelivery) //if the guest account tries to send an email to a user not on our server, send bad error code
                     current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Guest doesn't have permission to send emails to outside servers.");
-
-                if(bLocalDelivery && !current_client.validateUser(sRecipient.substr(0,sRecipient.find("@"))))
+                else if(bLocalDelivery && !current_client.validateUser(sRecipient.substr(0,sRecipient.find("@"))))
                     current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient"); //sending back a bad error code
-       
                 else
                 {
                     current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //if the username was valid, send back 250
@@ -294,10 +293,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     //cout << "before recvdata: " << recMessage << endl;
                     clientFlop = current_client.recvData(recMessage); //getting more data from client
                     //cout << "after recvdata " << recMessage << endl;
-
-                    dwWaitResult = WaitForSingleObject( 
-                        mailMutex,    // handle to mutex
-                        INFINITE);   // no time-out interval
 
                     //checking to see if the string is DATA
                     if (recMessage.substr(0,6) != "DATA")
@@ -310,10 +305,25 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         //get the data of the message part
                         //create file output object and open it in append mode
                         ofstream fout;
-                        if(bLocalDelivery)
+                        
+                        if(bLocalDelivery) //if local
                             fout.open ((string(sRecipient.substr(0,sRecipient.find("@")) + ".txt")).c_str(), ios::app);
-                        else
-                            fout.open("email.fifo", ios::app);
+                        else //if on a different server and needs to be relayed
+                        {
+                            while(!isOwned)
+                            {
+                                dwWaitResult = WaitForSingleObject(
+                                    mailMutex,    // handle to mutex
+                                    INFINITE);   // no time-out interval
+
+                                if(dwWaitResult == WAIT_OBJECT_0)
+                                {
+                                    fout.open("email.fifo", ios::app);
+                                    isOwned = true;
+                                }
+                            }
+                        }
+                            
 
                         //write the initial part of the email
                         //fout << "\"" << current_client.getDateTime() << "\",\"" << sRecipient << "\",\"" << username << "\",\"";
@@ -347,7 +357,8 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         current_client.sendData(Status::SMTP_ACTION_COMPLETE);
                         fout.close();
 
-                        ReleaseMutex(mailMutex); //Release the mutex from the thread
+                        if(!bLocalDelivery) //if it was not local, we used a mutex and need to release it
+                            ReleaseMutex(mailMutex); //Release the mutex from the thread
                     }
                 }
             }
