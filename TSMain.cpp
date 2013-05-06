@@ -279,15 +279,24 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     bLocalDelivery = TRUE; 
                 }
 
-                if (isGuest && !bLocalDelivery) //if the guest account tries to send an email to a user not on our server, send bad error code
-                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Guest doesn't have permission to send emails to outside servers.");
+                cout << "Set bLocal" << endl;
 
-                if(bLocalDelivery && !current_client.validateUser(sRecipient.substr(0,sRecipient.find("@"))))
+                if (isGuest && !bLocalDelivery) //if the guest account tries to send an email to a user not on our server, send bad error code
+                {
+                    cout << "Bangin with " << isGuest << endl;
+                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Guest doesn't have permission to send emails to outside servers.");\
+                }
+
+                else if(bLocalDelivery && !current_client.validateUser(sRecipient.substr(0,sRecipient.find("@"))))
+                {
+                    cout << "Weird nips" << endl;
                     current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient"); //sending back a bad error code
-       
+                }
                 else
                 {
+                    cout << "Valid user" << endl;
                     current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //if the username was valid, send back 250
+                    cout << "250'd that bitch " << endl;
                     bRecipientSent = TRUE;
 
                     //getting data and writing to file part

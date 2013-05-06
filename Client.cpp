@@ -116,7 +116,9 @@ int main(int argc, char * argv[])
                 sendMessage = "RCPT TO:<" + recipient + ">"; //set what we're sending
                 sockClient.sendData(sendMessage); //send data
                 serverFlop = sockClient.recvData(recMessage); //get response
-
+                cout << "sF: " << serverFlop << endl;
+                serverFlop = sockClient.recvData(recMessage); //get response
+                cout << "sF2: " << serverFlop << endl;
                 //check for an error
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                 {
