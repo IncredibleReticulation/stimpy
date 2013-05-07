@@ -171,9 +171,8 @@ int main(int argc, char * argv[])
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                     break; //break if we found an error
 
-                //print a newline for formatting
+                //print a heading and start getting the message
                 cout << endl << "Your mailbox\n\n";
-                sockClient.sendData("OK");
                 sockClient.recvData(recMessage); //get the first part of the email message
                 
                 while(recMessage != "EOF")
@@ -213,33 +212,9 @@ int main(int argc, char * argv[])
                                     messBuf += "\n";
                                 break;
                         }
-                        // if(lineCount < 4) //if we're not at the data part yet, don't decrypt
-                        //     messBuf += recMessage; //add what the server sent to the message buffer string
-                        // else
-                        //     messBuf += sockClient.decrypt(recMessage); //decrypt cuz we're at the data part
                     }
-
                     sockClient.recvData(recMessage); //get the next part of the email message
-
                 }
-
-
-
-        //         while(recMessage != ".") //while the server doesn't send a single period, keep getting and outputting email messages
-        //         {
-                   
-		    		// //split the message into the parts we need
-		    		// vector<string> message;
-		    		// sockClient.split(&message, recMessage, ",\"");
-	
-        //             //print information
-        //             cout << "Time: " << message[0].substr(1, message[0].length()-2) << endl; //print timestamp with date
-        //             cout << "To: " << message[1].substr(1, message[1].length()-2) << endl; //print who the message was to
-        //             cout << "From: " << message[2].substr(1, message[2].length()-2) << endl; //print who the message was from
-        //             cout << "Message Body: \n" << sockClient.decrypt(message[3].substr(1, message[3].length()-2)); //decrypt & print the message
-
-        //             sockClient.recvData(recMessage); //get the next email message
-        //         }
 				
                 cout << "End of the inbox!\n\n"; //letting the client know it's the end of their inbox
                 break;

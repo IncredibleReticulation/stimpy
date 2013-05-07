@@ -185,15 +185,18 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     string recMessage = ""; //will hold the command the client sent
     string sendMessage = ""; //will hold the reply we send
     bool isGuest = false;
+    int clientFlop = 0; //will hold the value that the recv function returns
 
-    //Set and send the welcome message
+    //send the welcome message and receive input back from the client
     current_client.sendResponse(Status::SMTP_SRV_RDY, "Welcome to the SMTP Server!"); //send initiation hello
-
-    current_client.recvData(recMessage); //get data from the client
+    clientFlop = current_client.recvData(recMessage); //get data from the client
 
     //checking out the string to see if it's helo
 	bool bHeloSent = FALSE;
 	do{
+        if(clientFlop == -1) //check if the client flops and disconnects and break if they do
+            break;
+
 		if (recMessage.substr(0,4) == "HELO") //if the first word is helo
 		{
 			current_client.sendData(Status::SMTP_ACTION_COMPLETE); //send back 250 that it's good
@@ -204,11 +207,11 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 		{
 			current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending the error code
 			cout << "Connection Failed. We did not recieive a HELO from client...\n";
-			current_client.recvData(recMessage); //get data from the client
+			clientFlop = current_client.recvData(recMessage); //get data from the client
 		}
 	} while (!bHeloSent);
 
-    current_client.recvData(recMessage); //recieving the verify and a username
+    current_client.recvData(recMessage); //receiving the verify and a username
     string username;
 
     //checking to see if it's a verify
@@ -233,7 +236,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     }
 
     //getting data from the client
-    int clientFlop = 0; //will hold the value that the recv function returns
     clientFlop = current_client.recvData(recMessage);
 
     //our send/recv loop
@@ -271,7 +273,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                 if ((sSrvr == "127.0.0.1" || sSrvr == sSrvrIP || sSrvr == ""))
                 {
-                    bLocalDelivery = TRUE; 
+                    bLocalDelivery = TRUE;
                 }
 
                 if(isGuest && !bLocalDelivery) //if the guest account tries to send an email to a user not on our server, send bad error code
@@ -304,14 +306,15 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                             fout.open ((string(sRecipient.substr(0,sRecipient.find("@")) + ".txt")).c_str(), ios::app);
                         else //if on a different server and needs to be relayed
                         {
-                            cout << "before while loop\n";
+                            //cout << "before while loop\n";
                             while(!isOwned)
                             {
                                 //cout << "after while loop, before wait call\n";
                                 //IT BREAKS WHEN RIGHT HERE. it never gets to the cout after calling this function to wait IDK why dad
-                                dwWaitResult = WaitForSingleObject(
-                                    mailMutex,    // handle to mutex
-                                    INFINITE);   // no time-out interval
+                                // dwWaitResult = WaitForSingleObject(
+                                //     mailMutex,    // handle to mutex
+                                //     INFINITE);   // no time-out interval
+                                dwWaitResult = WAIT_OBJECT_0;
 
                                 //cout << "after waiting for single object\n";
 
@@ -385,26 +388,25 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //send 250 OK so they know we got the command okay then send mail
 
                     getline(fin, sendMessage); //get first line from file
-
-                    while(!fin.eof()) //until we read in a single period from the file
+                    
+                    while(!fin.eof()) //until we get to the end of the file
                     {
-                        clientFlop = current_client.recvData(recMessage); //get the OK from the client
+                        //send the line from the file and get an ok from the client
+                        current_client.sendData(sendMessage);
+                        clientFlop = current_client.recvData(recMessage);
 
                         if(clientFlop == -1) //check to see if they actually sent a message and break if they didn't
                             break;
 
                         if(sendMessage == "") //if it doesn't have anything, then make it a newline because getline skips over it
                             sendMessage = "\n";
-                        //send the line we got from the file and get another line
-                        current_client.sendData(sendMessage);
-                        getline(fin, sendMessage);
 
-                        //wait a little bit so the client can definitely get the message correctly
-                        //Sleep(5); //sleep for 5 milliseconds
+                        //get another line from the file
+                        getline(fin, sendMessage);
                     }
 
                     current_client.sendData("EOF"); //send to the client that we're at the eof
-                    current_client.recvData(recMessage); //get the final OK
+                    //current_client.recvData(recMessage); //get the final OK
                 }
 
             }
