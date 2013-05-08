@@ -34,6 +34,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
     int serverFlop = 0; //will hold value given by recv function and will be -1 if the server flops and shuts down
     ifstream fin; //file input object to read stuff in from the message fifo queue
     bool isSent = false;
+    int timeoutCount = 0;
 
     while(true) //endless loop to open the fifo file and send the email in it
     {
@@ -69,6 +70,8 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
                 while(!isSent)
                 {
+                    timeoutCount++; //adding one to the timeout count.
+
                     //connect to the server where the message should be going
                     fifoClient.connectToServer(message[1].substr(message[1].find("@")+1).c_str(), 31000);
 
@@ -163,6 +166,17 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                                 //will be deleted without being sent anywhere. maybe we should write it to another text file if doesn't send? idk
                     }
 
+                    if (timeoutCount == 3) //if the count gets to three, write to the log file
+                    {
+                        ofstream fout;
+                        fout.open("fts.flop", ios::app); //opening the new flop
+
+                        for (int i =0; i < message.size(); i++) //writing the contents of the vector to the error log
+                            fout << message[i] << endl; //writing the message
+                        
+                        fout.close();
+                        break;
+                    }
                 } //end of the sending while
             } //end of the else
         } //end of the if checking the mutex result
