@@ -41,6 +41,11 @@ int main(int argc, char * argv[])
     {
         sockClient.sendData("HELO 127.0.0.1");
     }
+    else
+    {
+        cout << "Server did not indicate that they were ready to initiate a connection :(\n";
+        return 69; //end program
+    }
 
     serverFlop = sockClient.recvData(recMessage); //receive next status message from server
     if(recMessage.substr(0,3) == "250") //prompt for login info and send it
@@ -51,6 +56,11 @@ int main(int argc, char * argv[])
 
         sendMessage = "VRFY " + username;
         sockClient.sendData(sendMessage);
+    }
+    else
+    {
+        cout << "Server may not have gotten our 'HELO' :(\n";
+        return 69; //ends program
     }
 
     //receive server response after login
@@ -66,6 +76,11 @@ int main(int argc, char * argv[])
     else if(recMessage == "250")
     {
         cout << "Logon successful.\n\n";
+    }
+    else
+    {
+        cout << "Unknown error when attempting to login to server...\n";
+        return -69; //ends program
     }
 
     string menu = "1. Send Email\n2. Read Inbox\n3. Quit\n"; //our menu of options
