@@ -262,6 +262,15 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
         if(recMessage.substr(0,9) == "MAIL FROM")
         {
+            string sender = recMessage.substr(11, recMessage.length()-12);
+            cout << "Sender  = " << sender << endl;
+
+            if (sender.find("@") == -1)
+            {
+                cout << "Assuming this is a local address\n";
+                sender += "@" + sSrvrIP;
+            }
+            
             cout << "Client Sent: " << recMessage << endl; //for debugging
             current_client.sendData(Status::SMTP_ACTION_COMPLETE);
 
@@ -278,10 +287,10 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             {
                 cout << "Client Send: " << recMessage << endl; //for debugging
                 //sRecipient = recMessage.substr(9, recMessage.find("@")-9);
-                sRecipient = recMessage.substr(9, recMessage.length()-10);
-                string sSrvrT = recMessage.substr(recMessage.find("@")+1);
-                string sSrvr = sSrvrT.substr(0, sSrvrT.length()-1);
-                cout << "User server: " << sSrvr << endl;
+                sRecipient = recMessage.substr(9, recMessage.length()-10); //the entire string including IP Address
+                string sSrvrT = recMessage.substr(recMessage.find("@")+1); //@ to end, including the >
+                string sSrvr = sSrvrT.substr(0, sSrvrT.length()-1); //@ to end, minus the bracet
+                cout << "User server: " << sSrvr << ">" << endl;
                 //cout << "recipient username: " << recMessage.substr(9, recMessage.find("@")-9) << endl; //for debugging
                 //checking to see if the user is valid
                 bool bLocalDelivery = FALSE;
@@ -344,7 +353,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                         //write the initial part of the email
                         //fout << "\"" << current_client.getDateTime() << "\",\"" << sRecipient << "\",\"" << username << "\",\"";
-                        fout << current_client.getDateTime() << endl << sRecipient << endl << username << endl;
+                        fout << current_client.getDateTime() << endl << sRecipient << endl << sender << endl;
 
                         //tell client to send data, then get data and write to file
                         current_client.sendResponse(Status::SMTP_BEGIN_MSG,"OK -- Send Data");
