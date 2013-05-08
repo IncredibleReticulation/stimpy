@@ -199,7 +199,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
 		if (recMessage.substr(0,4) == "HELO") //if the first word is helo
 		{
-			current_client.sendData(Status::SMTP_ACTION_COMPLETE); //send back 250 that it's good
+			current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "Welcome to MAST-Stimpy@" + sSrvrIP); //send 250 and welcome message
 			cout << "Connection Successful. We received a HELO from the client.\n";
 			bHeloSent = TRUE;
 		}
@@ -391,6 +391,9 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     
                     while(!fin.eof()) //until we get to the end of the file
                     {
+                        if(sendMessage == "") //if it doesn't have anything, then make it a newline because getline skips over it
+                            sendMessage = "\n";
+
                         //send the line from the file and get an ok from the client
                         current_client.sendData(sendMessage);
                         clientFlop = current_client.recvData(recMessage);
@@ -398,17 +401,12 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         if(clientFlop == -1) //check to see if they actually sent a message and break if they didn't
                             break;
 
-                        if(sendMessage == "") //if it doesn't have anything, then make it a newline because getline skips over it
-                            sendMessage = "\n";
-
                         //get another line from the file
                         getline(fin, sendMessage);
                     }
 
                     current_client.sendData("EOF"); //send to the client that we're at the eof
-                    //current_client.recvData(recMessage); //get the final OK
                 }
-
             }
         }
 
