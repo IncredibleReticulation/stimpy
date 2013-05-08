@@ -224,16 +224,11 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         {
             current_client.sendData(Status::SMTP_ACTION_COMPLETE); //if the username was valid, send back 250
         }
-        else if (username == "guest" || username == "Guest" || username == "GUEST")//checking to see if the user account is guest
+        else
         {
             isGuest = true; //changing the value of the bool to true
             current_client.sendData(Status::SMTP_ACTION_COMPLETE);
         }
-        else
-        {
-            current_client.sendData(Status::SMTP_MBOX_UNAV);
-        }
-    }
 
     //getting data from the client
     clientFlop = current_client.recvData(recMessage);
