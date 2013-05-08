@@ -40,10 +40,11 @@ DWORD WINAPI relayMail(LPVOID lpParam)
     {
         //see: http://msdn.microsoft.com/en-us/library/ms687032%28v=vs.85%29.aspx
         //cout << "before wait in fifo thread\n";
-        dwWaitResult = WaitForSingleObject( 
-            mailMutex,    // handle to mutex
-            INFINITE);  // no time-out interval
+        // dwWaitResult = WaitForSingleObject( 
+        //     mailMutex,    // handle to mutex
+        //     INFINITE);  // no time-out interval
         //cout << "after wait in fifo thread\n";
+        dwWaitResult = WAIT_OBJECT_0;
 
         if(dwWaitResult == WAIT_OBJECT_0) //if we have ownership of the mutex
         {
@@ -51,7 +52,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
             if(!fin.is_open())
             {
-                //Sleep(1000); //wait a little while before trying to open the file again
+                Sleep(100); //wait a little while before trying to open the file again
             }
             else
             {
@@ -66,7 +67,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                 fin.close(); //close file; done reading stuff in
 
                 remove("email.fifo"); //remove the file after we're done with it
-                ReleaseMutex(mailMutex); //release the mutex from the thread
+                //ReleaseMutex(mailMutex); //release the mutex from the thread
 
                 while(!isSent)
                 {
@@ -373,8 +374,8 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         current_client.sendData(Status::SMTP_ACTION_COMPLETE);
                         fout.close();
 
-                        if(!bLocalDelivery) //if it was not local, we used a mutex and need to release it
-                            ReleaseMutex(mailMutex); //Release the mutex from the thread
+                        // if(!bLocalDelivery) //if it was not local, we used a mutex and need to release it
+                        //     ReleaseMutex(mailMutex); //Release the mutex from the thread
                     }
                 }
             }
@@ -499,10 +500,10 @@ int main(int argc, char * argv[])
     sockaddr_in from;
     int fromlen = sizeof(from);
 
-    mailMutex = CreateMutex( 
-        NULL,              // default security attributes
-        FALSE,             // initially not owned
-        NULL);             // unnamed mutex
+    // mailMutex = CreateMutex( 
+    //     NULL,              // default security attributes
+    //     FALSE,             // initially not owned
+    //     NULL);             // unnamed mutex
 
     //create our fifo thread only once because it will loop continuously
     CreateThread(NULL, 0,relayMail,(LPVOID)NULL, 0, &thread);
@@ -518,7 +519,7 @@ int main(int argc, char * argv[])
     }
 
     WSACleanup(); //windows cleanup
-    CloseHandle(mailMutex); //Close the Handle for Mutex
+    //CloseHandle(mailMutex); //Close the Handle for Mutex
 
     return 0; //ends program
 }
