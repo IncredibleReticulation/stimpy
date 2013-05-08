@@ -12,11 +12,18 @@
 #include "ThreadSock.h"
 #include "ClientSocket.h"
 #include "Status.h"
+#include <algorithm>
 
 using namespace std;
 
 string sSrvrIP; //global variable which holds the IP address of the server
 HANDLE mailMutex; //Golbal Mutex Variable
+
+string upCase(string str)
+{
+    std::transform(str.begin(), str.end(),str.begin(), ::toupper);
+    return str;
+}
 
 //our thread for FIFO reading and message relaying - doesn't need a parameter passed in at this point
 DWORD WINAPI relayMail(LPVOID lpParam)
@@ -212,7 +219,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         if(clientFlop == -1) //check if the client flops and disconnects and break if they do
             break;
 
-		if (recMessage.substr(0,4) == "HELO") //if the first word is helo
+		if (upCase(recMessage.substr(0,4)) == "HELO") //if the first word is helo
 		{
 			current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "Welcome to MAST-Stimpy@" + sSrvrIP); //send 250 and welcome message
 			cout << "Connection Successful. We received a HELO from the client.\n";
@@ -230,7 +237,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     string username;
 
     //checking to see if it's a verify
-    if (recMessage.substr(0,4) == "VRFY")
+    if (upCase(recMessage.substr(0,4)) == "VRFY")
     {
         username = recMessage.substr(5); //trim the username
 
@@ -254,13 +261,13 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     clientFlop = current_client.recvData(recMessage);
 
     //our send/recv loop
-    while(recMessage != "QUIT" || recMessage != "Quit" || recMessage != "quit")
+    while(upCase(recMessage) != "QUIT" || recMessage != "Quit" || recMessage != "quit")
     {
 		bool bRecipientSent = FALSE;
         bool isOwned = false; //will hold if the data has been sent and written to file
 		string sRecipient = "";
 
-        if(recMessage.substr(0,9) == "MAIL FROM")
+        if(upCase(recMessage.substr(0,9)) == "MAIL FROM")
         {
             string sender = recMessage.substr(11, recMessage.length()-12);
             cout << "Sender  = " << sender << endl;
@@ -278,7 +285,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             clientFlop = current_client.recvData(recMessage);
 
             //rcpt to section
-            if (recMessage.substr(0,7) != "RCPT TO") //checking to see if it's RCPT TO
+            if (upCase(recMessage.substr(0,7)) != "RCPT TO") //checking to see if it's RCPT TO
             {
                 cout << "RCPT TO wasn't sent...\n"; //should probably sent syntax error back
                 current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //send error
@@ -315,7 +322,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     //cout << "after recvdata " << recMessage << endl;
 
                     //checking to see if the string is DATA
-                    if (recMessage.substr(0,6) != "DATA")
+                    if (upCase(recMessage.substr(0,6)) != "DATA")
                     {
                         cout << "DATA wasn't received\n";
                         current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //send error
@@ -390,7 +397,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             }
         }
 
-        else if(recMessage.substr(0,5) == "INBOX") //if they send an inbox and want to check their inbox
+        else if(upCase(recMessage.substr(0,5)) == "INBOX") //if they send an inbox and want to check their inbox
         {
             cout << "The Client Sent: " << recMessage << endl;
 
@@ -443,7 +450,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         //get data from the client before starting loop again
         clientFlop = current_client.recvData(recMessage);
 
-        if(recMessage == "QUIT" || clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
+        if(upCase(recMessage) == "QUIT" || clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
         {
             current_client.sendResponse(Status::SMTP_SRV_CLOSE, "OK -- Goodbye...");
             break;
@@ -532,3 +539,6 @@ int main(int argc, char * argv[])
 
     return 0; //ends program
 }
+
+
+
