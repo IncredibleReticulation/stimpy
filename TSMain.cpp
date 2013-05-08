@@ -229,6 +229,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             isGuest = true; //changing the value of the bool to true
             current_client.sendData(Status::SMTP_ACTION_COMPLETE);
         }
+    }
 
     //getting data from the client
     clientFlop = current_client.recvData(recMessage);
