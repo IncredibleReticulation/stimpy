@@ -167,7 +167,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                                 //will be deleted without being sent anywhere. maybe we should write it to another text file if doesn't send? idk
                     }
 
-                    if (timeoutCount == 3) //if the count gets to three, write to the log file
+                    if (timeoutCount == 3 && !isSent) //if the count gets to three, write to the log file
                     {
                         ofstream fout;
                         fout.open("fts.flop", ios::app); //opening the new flop
@@ -179,6 +179,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                         break;
                     }
                 } //end of the sending while
+                fifoClient.closeConnection();
             } //end of the else
         } //end of the if checking the mutex result
 
