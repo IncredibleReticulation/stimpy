@@ -21,9 +21,7 @@ bool ClientSocket::connectToServer(const char *ipAddress, int port)
     if (connect(mySocket,(SOCKADDR*)&myAddress, sizeof(myAddress)) == SOCKET_ERROR) //if there is an error connecting, print error and end program
     {
         cerr<<"ClientSocket: Failed to connect\n"; //error message
-        //WSACleanup(); //windows cleanup function
         return false;
-        //exit(13); //ends program
     }
 
     return true;

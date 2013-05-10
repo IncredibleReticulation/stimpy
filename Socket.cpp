@@ -14,8 +14,6 @@ Socket::Socket()
     if(WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR) //if there is an error, print an error and exit the program
     {
         cerr<<"Socket Initialization: Error with WSAStartup\n"; //error message
-        WSACleanup(); //windows clean up function
-        //exit(10); //ends program
     }
 
     //Create a socket
@@ -24,8 +22,6 @@ Socket::Socket()
     if (mySocket == INVALID_SOCKET) //if there is an error creating or connecting with the socket print an error and end program
     {
         cerr << "Socket Initialization: Error creating socket\n"; //error message
-        WSACleanup(); //windows clean up function
-        //exit(11); //ends program
     }
 
     myBackup = mySocket; //backup our current socket for future use in case
