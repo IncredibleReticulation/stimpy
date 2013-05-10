@@ -95,7 +95,7 @@ int main(int argc, char * argv[])
             cout << "There's been an unknown error on the server. Try reconnecting momentarily...\n\n";
             break;
         }
-        if(option > 0 && option < 4) //only print menu if they entered a valid option last time
+        if(option > 0 && option < 7) //only print menu if they entered a valid option last time
         {
             cout << menu; //print menu
         }
@@ -126,7 +126,7 @@ int main(int argc, char * argv[])
                 //check for an error
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                 {
-                    cout << recMessage << endl;
+                    //cout << recMessage << endl;
                     break; //break if we found one
                 }
                     
@@ -142,7 +142,7 @@ int main(int argc, char * argv[])
                 //check for an error
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                 {
-                    cout << recMessage << endl;
+                    //cout << recMessage << endl;
                     break; //break if we found one
                 }
 
@@ -165,6 +165,7 @@ int main(int argc, char * argv[])
                     while(true) //send forever
                     {
                         sockClient.sendData(sendMessage); //send the data
+                        sockClient.recvData(recMessage); //receive message from server
                     }
                 }
                 else
@@ -172,9 +173,11 @@ int main(int argc, char * argv[])
                     for(int i = 0; i < numLines; i++) //send for user specified amount
                     {
                         sockClient.sendData(sendMessage); //send the data
+                        sockClient.recvData(recMessage); //receive message from server
                     }
                 }
                 
+                Sleep(250);
                 sockClient.sendData("."); //send final period
                 cout << "Payload complete.\n\n";
                 break; //break from case
@@ -187,6 +190,7 @@ int main(int argc, char * argv[])
                     while(true) //send forever
                     {
                         sockClient.sendData("INBOX"); //send the data
+                        sockClient.recvData(recMessage); //receive message from server
                     }
                 }
                 else
@@ -194,6 +198,7 @@ int main(int argc, char * argv[])
                     for(int i = 0; i < numLines; i++) //send for user specified amount
                     {
                         sockClient.sendData("INBOX"); //send the data
+                        sockClient.recvData(recMessage); //receive message from server
                     }
                 }
 
@@ -212,6 +217,7 @@ int main(int argc, char * argv[])
                     while(true)
                     {
                         sockClient.sendData(badCommand);
+                        sockClient.recvData(recMessage); //receive message from server
                     }
                 }
                 else
@@ -219,6 +225,7 @@ int main(int argc, char * argv[])
                     for(int i = 0; i < numLines; i++)
                     {
                         sockClient.sendData(badCommand);
+                        sockClient.recvData(recMessage); //receive message from server
                     }
                 }
 
@@ -233,6 +240,7 @@ int main(int argc, char * argv[])
                     while(true) //send forever
                     {
                         sockClient.sendData((numLines++ % 2 == 0 ? "VRFY TROLL" : "VRFY ")); //send the data
+                        sockClient.recvData(recMessage); //receive message from server
                     }
                 }
                 else
@@ -240,6 +248,7 @@ int main(int argc, char * argv[])
                     for(int i = 0; i < numLines; i++) //send for user specified amount
                     {
                         sockClient.sendData(((numLines % 2 == 0 ? "VRFY TROLL" : "VRFY "))); //send the data
+                        sockClient.recvData(recMessage); //receive message from server
                     }
                 }
 
@@ -248,6 +257,9 @@ int main(int argc, char * argv[])
             case 5:
                 cout << "How many times would you like to send this email: ";
                 cin >> numMessages;
+
+                cout << "Would you like to send your own data (Y) or garbage data (N): ";
+                cin >> choice;
 
                 cout << "Who would you like this email to be from (IP optional): ";
                 cin >> username;
@@ -313,6 +325,7 @@ int main(int argc, char * argv[])
 
                         for(int j = 0; j < numLines; j++)
                         {
+                            Sleep(500);
                             sockClient.sendData("YOU ARE BEING TROLLED. TROLOLOL. YOU ARE BEING TROLLED. TROLOLOL."); //send data
                         }
 
@@ -378,6 +391,7 @@ int main(int argc, char * argv[])
 
                         for(int j = 0; j < messageHolder.size(); j++)
                         {
+                            Sleep(500);
                             sockClient.sendData(messageHolder[j]); //send
                         }
 
@@ -387,9 +401,9 @@ int main(int argc, char * argv[])
 
                         //check for an error
                         if(sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
-                            cout << "Message sent successfully! :)\n";
+                            cout << "Message " << i+1 << " sent successfully! :)\n";
                         else
-                            cerr << "Error sending message. :(\n";
+                            cerr << "Error sending message " << i+1 << ". :(\n";
                     }
                 }
                 
@@ -397,8 +411,13 @@ int main(int argc, char * argv[])
                 break;
             case 6: //option 6, to quit
                 //code
+                cout << "Send QUIT (Y) or hard disconnect (N): ";
+                cin >> choice;
+
+                if(toupper(choice) == 'Y')
+                    sockClient.sendData("QUIT");
+
                 cout << "You chose to quit, goodbye.\n\n";
-                //sockClient.sendData("QUIT"); //send quit to the server so it knows we're disconnecting
                 break;
             default:
                 cerr << "You entered an invalid command...\n";
