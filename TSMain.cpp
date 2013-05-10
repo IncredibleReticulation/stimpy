@@ -37,6 +37,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
     while(true) //endless loop to open the fifo file and send the email in it
     {
+        cout << "                                 MAINLOOP" << endl;
         string recMessage = ""; //will hold the command the client sent
         string sendMessage = ""; //will hold the reply we send
         vector<string> message;
@@ -44,6 +45,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
         int serverFlop = 0; //will hold value given by recv function and will be -1 if the server flops and shuts down
         ifstream fin; //file input object to read stuff in from the message fifo queue
         bool isSent = false; //bool that will hold if the message sent to the server successfully
+        bool isFTS = false;
         int timeoutCount = 0; //timeout counter
         ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
         timeoutCount = 0; //reset the timeout counter
@@ -77,172 +79,14 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                 cout << "prewhilesent" << endl;
                 while(!isSent)
                 {
+                    cout << "                                 UNSENTLOOP" << endl;
                     cout << "notsentloop" << endl;
                     timeoutCount++; //adding one to the timeout count.
 
                     //connect to the server where the message should be going
-                    fifoClient.connectToServer(message[1].substr(message[1].find("@")+1).c_str(), 31000);
-                    cout << "postnips" << endl;
-
-                    //receive the first 220 message
-                    serverFlop = fifoClient.recvData(recMessage);
-                    if(serverFlop == -1) //check if the server flopped
+                    if(!fifoClient.connectToServer(message[1].substr(message[1].find("@")+1).c_str(), 31000))
                     {
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-                    cout << "postflopcheck" << endl;
-                    if(recMessage.substr(0,3) == "220")
-                    {
-                        fifoClient.sendData("HELO 127.0.0.1");
-                    }
-                    else
-                    {
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-
-
-
-                    serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
-
-
-                    if(serverFlop == -1) //check if the server flopped
-                    {
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-                    cout << "postflopcheck2" << endl;
-                    if(recMessage.substr(0,3) == "250") //send the login information as long as we got a 250 from the server first
-                    {
-                        //sendMessage = "VRFY " + message[2].substr(0, message[2].find("@"));
-                        sendMessage = "VRFY guest"; //login using guest account
-                        fifoClient.sendData(sendMessage);
-                    }
-                    else //if we can't login, close connection
-                    {
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-                    cout << "postloginsuccess" << endl;
-
-                    serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
-
-                    if(serverFlop == -1) //check if the server flopped
-                    {
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-
-                    if(recMessage == "550" || recMessage == "500") //if login fails, print error and close connection
-                    {
-                        cout << "Invalid user when trying to login as guest...\n";
-                        fifoClient.closeConnection(); //close connection
-                        continue;
-                    }
-                    cout << "postloginreal" << endl;
-
-                    //send the message in the fifo queue
-                    sendMessage = "MAIL FROM:<" + message[2] + ">";
-                    fifoClient.sendData(sendMessage); //send the mail from command to the server
-                    serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
-                    cout << "postmfrom" << endl;
-                    if(serverFlop == -1) //check if the server flopped
-                    {
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-
-                    //check for an error
-                    if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
-                    {
-                        cout << recMessage << endl;
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-
-                    sendMessage = "RCPT TO:<" + message[1] + ">"; //set what we're sending
-                    fifoClient.sendData(sendMessage); //send data
-                    serverFlop = fifoClient.recvData(recMessage); //get response
-
-                    if(serverFlop == -1) //check if the server flopped
-                    {
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-
-                    //check for an error
-                    if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
-                    {
-                        cout << recMessage << endl;
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-
-                    //send data command to the server and get a response
-                    fifoClient.sendData("DATA"); //send that we're ready to send data
-                    serverFlop = fifoClient.recvData(recMessage); //get the response
-
-                    if(serverFlop == -1) //check if the server flopped
-                    {
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-
-                    //check for an error
-                    if(!fifoClient.checkError(recMessage, Status::SMTP_BEGIN_MSG))
-                    {
-                        cout << recMessage << endl;
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-                    cout << "premagicnumbers" << endl;
-                    for(int i = 3; i < message.size(); i++)
-                    {
-                        cout << "idx: " << i << " " << sendMessage << endl;
-                        sendMessage = message[i];
-
-                        if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
-                            sendMessage = "\n";
-                        Sleep(250);
-                        fifoClient.sendData(sendMessage); //send the data, it's already encrypted
-                    }
-                    fifoClient.sendData(".");
-                    /*while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
-                    {
-                        cout << "idx: " << index << " " << sendMessage;
-                        sendMessage = message[index];
-
-                        if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
-                            sendMessage = "\n";
-
-                        fifoClient.sendData(sendMessage); //send the data, it's already encrypted
-                        index++; //increment the index so we can get the next part of the message
-                    }*/
-                    cout << "postmagicnumbers" << endl;
-
-                    serverFlop = fifoClient.recvData(recMessage); //get data from server
-
-                    if(serverFlop == -1) //check if the server flopped
-                    {
-                        fifoClient.closeConnection();
-                        continue;
-                    }
-
-                    //check for an error, if there was an error we need to try this entire loop again
-                    if(fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
-                    {
-                        cout << "Message sent successfully! :)\n\n";
-                        isSent = true;
-                    }
-                    else
-                    {
-                        cerr << "Error sending message. Please retry in a few minutes. :(\n\n";
-                        isSent = false;
-                    }
-
-                    if (timeoutCount == 3 && !isSent) //if the count gets to three, write to the log file
-                    {
+                        cout << "In that fts shit" << endl;
                         ofstream fout;
                         fout.open("fts.flop", ios::app); //opening the new flop
 
@@ -250,15 +94,187 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                             fout << message[i] << endl; //writing the message
                         
                         fout.close();
-                        break;
+                        isSent = true;
+                        isFTS = true;
                     }
+                    else
+                    {
+                        cout << "                                 UNSENTLOOP AFTER CHECK" << endl;
+
+                        cout << "postnips" << endl;
+
+                        //receive the first 220 message
+                        serverFlop = fifoClient.recvData(recMessage);
+                        if(serverFlop == -1) //check if the server flopped
+                        {
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+                        cout << "postflopcheck" << endl;
+                        if(recMessage.substr(0,3) == "220")
+                        {
+                            fifoClient.sendData("HELO 127.0.0.1");
+                        }
+                        else
+                        {
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+
+
+
+                        serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+
+
+                        if(serverFlop == -1) //check if the server flopped
+                        {
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+                        cout << "postflopcheck2" << endl;
+                        if(recMessage.substr(0,3) == "250") //send the login information as long as we got a 250 from the server first
+                        {
+                            //sendMessage = "VRFY " + message[2].substr(0, message[2].find("@"));
+                            sendMessage = "VRFY guest"; //login using guest account
+                            fifoClient.sendData(sendMessage);
+                        }
+                        else //if we can't login, close connection
+                        {
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+                        cout << "postloginsuccess" << endl;
+
+                        serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+
+                        if(serverFlop == -1) //check if the server flopped
+                        {
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+
+                        if(recMessage == "550" || recMessage == "500") //if login fails, print error and close connection
+                        {
+                            cout << "Invalid user when trying to login as guest...\n";
+                            fifoClient.closeConnection(); //close connection
+                            continue;
+                        }
+                        cout << "postloginreal" << endl;
+
+                        //send the message in the fifo queue
+                        sendMessage = "MAIL FROM:<" + message[2] + ">";
+                        fifoClient.sendData(sendMessage); //send the mail from command to the server
+                        serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+                        cout << "postmfrom" << endl;
+                        if(serverFlop == -1) //check if the server flopped
+                        {
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+
+                        //check for an error
+                        if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                        {
+                            cout << recMessage << endl;
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+
+                        sendMessage = "RCPT TO:<" + message[1] + ">"; //set what we're sending
+                        fifoClient.sendData(sendMessage); //send data
+                        serverFlop = fifoClient.recvData(recMessage); //get response
+
+                        if(serverFlop == -1) //check if the server flopped
+                        {
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+
+                        //check for an error
+                        if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                        {
+                            cout << recMessage << endl;
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+
+                        //send data command to the server and get a response
+                        fifoClient.sendData("DATA"); //send that we're ready to send data
+                        serverFlop = fifoClient.recvData(recMessage); //get the response
+
+                        if(serverFlop == -1) //check if the server flopped
+                        {
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+
+                        //check for an error
+                        if(!fifoClient.checkError(recMessage, Status::SMTP_BEGIN_MSG))
+                        {
+                            cout << recMessage << endl;
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+                        cout << "premagicnumbers" << endl;
+                        for(int i = 3; i < message.size(); i++)
+                        {
+                            cout << "idx: " << i << " " << sendMessage << endl;
+                            sendMessage = message[i];
+
+                            if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
+                                sendMessage = "\n";
+                            Sleep(250);
+                            fifoClient.sendData(sendMessage); //send the data, it's already encrypted
+                        }
+                        fifoClient.sendData(".");
+                        /*while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
+                        {
+                            cout << "idx: " << index << " " << sendMessage;
+                            sendMessage = message[index];
+
+                            if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
+                                sendMessage = "\n";
+
+                            fifoClient.sendData(sendMessage); //send the data, it's already encrypted
+                            index++; //increment the index so we can get the next part of the message
+                        }*/
+                        cout << "postmagicnumbers" << endl;
+
+                        serverFlop = fifoClient.recvData(recMessage); //get data from server
+
+                        if(serverFlop == -1) //check if the server flopped
+                        {
+                            fifoClient.closeConnection();
+                            continue;
+                        }
+
+
+                        
+                        //check for an error, if there was an error we need to try this entire loop again
+                        if(fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                        {
+                            cout << "Message sent successfully! :)\n\n";
+                            isSent = true;
+                        }
+                        else
+                        {
+                            cerr << "Error sending message. Please retry in a few minutes. :(\n\n";
+                            isSent = false;
+                        }
+                    }
+
 
                 } //end of the sending while
 
                 //close connection to the server because we're done
-                cout << "preclose" << endl;
-                fifoClient.closeConnection();
-                cout << "postclose" << endl;
+                if(!isFTS)
+                {
+                    cout << "preclose" << endl;
+                    fifoClient.closeConnection();
+                    cout << "postclose" << endl;
+                }
+                else
+                    cout << "My shit is flopped" << endl;
             } //end of the else
         } //end of the if checking the mutex result
         cout << "presleep" << endl;
@@ -498,20 +514,42 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         {
             cout << "Client didn't send 'MAIL FROM' or 'INBOX' in the beginning\n";
             cout << "They actually sent: " << recMessage << endl;
+            cout << "clientFlop: " << clientFlop << endl;
+
+            if (clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
+            {
+                cout << "Balls" << endl;
+                recMessage = "QUIT";
+                break;
+            }
+
+
+            
             current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
+        }
+
+        if (clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
+        {
+            break;
+        }
+cout << "Testicles" << endl;
+        if(upCase(recMessage) == "QUIT")
+        {
+            //current_client.sendResponse(Status::SMTP_SRV_CLOSE, "OK -- Goodbye...");
+            break;
         }
 
         //get data from the client before starting loop again
         clientFlop = current_client.recvData(recMessage);
 
-        if(upCase(recMessage) == "QUIT")
+        if (clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
         {
-            current_client.sendResponse(Status::SMTP_SRV_CLOSE, "OK -- Goodbye...");
             break;
         }
 
-        if (clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
+        if(upCase(recMessage) == "QUIT")
         {
+            current_client.sendResponse(Status::SMTP_SRV_CLOSE, "OK -- Goodbye...");
             break;
         }
 
@@ -568,6 +606,7 @@ int main(int argc, char * argv[])
 
     //for our thread
     DWORD thread;
+    DWORD thread2;
 
     //socket that we sendrecv data on
     SOCKET client;
@@ -585,7 +624,7 @@ int main(int argc, char * argv[])
         client = accept(sock,(struct sockaddr*)&from,&fromlen);
         cout << "Client connected.\n";
         //create our recv_cmds thread and pass client socket as a parameter
-        CreateThread(NULL, 0,handleMail,(LPVOID)client, 0, &thread);
+        CreateThread(NULL, 0,handleMail,(LPVOID)client, 0, &thread2);
     }
 
     WSACleanup(); //windows cleanup

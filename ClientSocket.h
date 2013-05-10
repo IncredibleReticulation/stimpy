@@ -8,7 +8,7 @@
 class ClientSocket : public Socket
 {
     public:
-        void connectToServer(const char*, int); //connects to server
+        bool connectToServer(const char*, int); //connects to server
         bool checkError(string, int); //check for errors
         string encrypt(string);
         string decrypt(string);

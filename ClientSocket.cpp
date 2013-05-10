@@ -11,7 +11,7 @@
 //Parameters: NOT KNOWN YET
 //Purpose: This function lists all of the files that are avalible for tansfer
 //Returns: NOT KNOWN YET
-void ClientSocket::connectToServer(const char *ipAddress, int port)
+bool ClientSocket::connectToServer(const char *ipAddress, int port)
 {
     //populate values in the struct
     myAddress.sin_family = AF_INET;
@@ -21,9 +21,12 @@ void ClientSocket::connectToServer(const char *ipAddress, int port)
     if (connect(mySocket,(SOCKADDR*)&myAddress, sizeof(myAddress)) == SOCKET_ERROR) //if there is an error connecting, print error and end program
     {
         cerr<<"ClientSocket: Failed to connect\n"; //error message
-        WSACleanup(); //windows cleanup function
+        //WSACleanup(); //windows cleanup function
+        return false;
         //exit(13); //ends program
     }
+
+    return true;
 }
 
 bool ClientSocket::checkError(string message, int error)
