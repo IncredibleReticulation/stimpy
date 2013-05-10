@@ -27,6 +27,7 @@ int main(int argc, char * argv[])
     string recMessage; //message it receives
     string sendMessage; //message it sends
     string username = ""; //will hold username
+    char trollChoice = ' '; //will hold if they want to troll the HELO process or not
     int serverFlop = 0; //will hold value given by recv function and will be -1 if the server flops and shuts down
 
     //print that we're attempting to connect
@@ -35,11 +36,54 @@ int main(int argc, char * argv[])
     ClientSocket sockClient; //clientsocket object instance
     sockClient.connectToServer(ipAddress.c_str(), port); //connect to the server using the ip and port given
 
+    cout << "Do you want to connect normal and troll (Y) or troll the HELO process (N): ";
+    cin >> trollChoice;
+    cin.ignore(10000, '\n');
+
     //receive the first 220 message
     serverFlop = sockClient.recvData(recMessage);
+
+    if(toupper(trollChoice) == 'N') //if they want to mess with the HELO process
+    {
+        string badCommand = "";
+        cout << "What would you like to send them (type quit to exit): ";
+        getline(cin, badCommand);
+
+        while(badCommand != "quit" && badCommand != "QUIT" && badCommand != "Quit")
+        {
+            sockClient.sendData(badCommand);
+            serverFlop = sockClient.recvData(recMessage);
+
+            cout << "\nResponse: " << recMessage << endl;
+
+            if(serverFlop == -1)
+            {
+                cout << "they flopped\n\n";
+                break;
+            }
+
+            cout << "\nWhat would you like to send them (type quit to exit): ";
+            getline(cin, badCommand);
+        }
+
+        if(serverFlop != -1)
+        {
+            cout << "Send QUIT (Y) or hard disconnect (N): ";
+            cin >> trollChoice;
+
+            if(toupper(trollChoice) == 'Y')
+                sockClient.sendData("QUIT");
+
+            cout << "You chose to quit, goodbye.\n\n";
+        }
+        
+        sockClient.closeConnection(); //closes connection
+        return 0; //ends program
+    }
+
     if(recMessage.substr(0,3) == "220")
     {
-        sockClient.sendData("HELO 127.0.0.1");
+        sockClient.sendData("HELO THISISTROLL69.69.69.69");
     }
     else
     {

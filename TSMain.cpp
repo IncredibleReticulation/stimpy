@@ -298,10 +298,16 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             isGuest = true; //changing the value of the bool to true
             current_client.sendData(Status::SMTP_ACTION_COMPLETE);
         }
-    }
 
-    //getting data from the client
-    clientFlop = current_client.recvData(recMessage);
+        //get data from the client only if they sent VRFY
+        clientFlop = current_client.recvData(recMessage);
+    }
+    else
+    {
+        cout << "We didn't get a VRFY.\n";
+        current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Expecting 'VRFY <user>' but was never received."); //send error
+        recMessage = "QUIT"; //set to quit so it just skips the while loop and ends the thread
+    }    
 
     //our send/recv loop
     while(upCase(recMessage) != "QUIT")
