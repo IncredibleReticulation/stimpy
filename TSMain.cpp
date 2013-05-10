@@ -32,7 +32,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
     //create a threadsock object and set our socket to the socket passed in as a parameter
     ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
-    DWORD dwWaitResult;     //wait for instance
+    //DWORD dwWaitResult;     //wait for instance
 
     string recMessage = ""; //will hold the command the client sent
     string sendMessage = ""; //will hold the reply we send
@@ -259,12 +259,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         {
             string sender = recMessage.substr(11, recMessage.length()-12);
             //cout << "Sender  = " << sender << endl;
-
-            if (sender.find("@") == -1)
-            {
-                //cout << "Assuming this is a local address\n";
-                sender += "@" + sSrvrIP;
-            }
             
             cout << "Client Sent: " << recMessage << endl; //for debugging
             current_client.sendData(Status::SMTP_ACTION_COMPLETE);
@@ -283,9 +277,16 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 cout << "Client Sent: " << recMessage << endl; //for debugging
                 //sRecipient = recMessage.substr(9, recMessage.find("@")-9);
                 sRecipient = recMessage.substr(9, recMessage.length()-10); //the entire string including IP Address
+
+                if (sRecipient.find("@") == -1)
+                {
+                    cout << "Assuming this is a local address\n";
+                    sRecipient += "@" + sSrvrIP;
+                }
+
                 string sSrvrT = recMessage.substr(recMessage.find("@")+1); //@ to end, including the >
                 string sSrvr = sSrvrT.substr(0, sSrvrT.length()-1); //@ to end, minus the bracet
-                cout << "User server: " << sSrvr << ">" << endl;
+                //cout << "User server: " << sSrvr << ">" << endl;
                 //cout << "recipient username: " << recMessage.substr(9, recMessage.find("@")-9) << endl; //for debugging
                 //checking to see if the user is valid
                 bool bLocalDelivery = FALSE;
