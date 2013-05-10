@@ -399,7 +399,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
             if (isGuest == true) //if isGuest is true, send an error and send error
             {
-                current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "No mailbox on a guest account.");
+                current_client.sendResponse(Status::SMTP_MBOX_UNAV, "No mailbox on a guest account.");
             }
 
             else
