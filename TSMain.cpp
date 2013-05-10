@@ -30,29 +30,38 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 {
     cout << "FIFO Thread Created\n";
 
-    string recMessage = ""; //will hold the command the client sent
-    string sendMessage = ""; //will hold the reply we send
-    vector<string> message;
-    string line = ""; //will hold each line we read in from the file
-    int serverFlop = 0; //will hold value given by recv function and will be -1 if the server flops and shuts down
-    ifstream fin; //file input object to read stuff in from the message fifo queue
-    bool isSent = false; //bool that will hold if the message sent to the server successfully
-    int timeoutCount = 0; //timeout counter
+    //create a threadsock object and set our socket to the socket passed in as a parameter
+    
+
+   
 
     while(true) //endless loop to open the fifo file and send the email in it
     {
+        string recMessage = ""; //will hold the command the client sent
+        string sendMessage = ""; //will hold the reply we send
+        vector<string> message;
+        string line = ""; //will hold each line we read in from the file
+        int serverFlop = 0; //will hold value given by recv function and will be -1 if the server flops and shuts down
+        ifstream fin; //file input object to read stuff in from the message fifo queue
+        bool isSent = false; //bool that will hold if the message sent to the server successfully
+        int timeoutCount = 0; //timeout counter
         ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
         timeoutCount = 0; //reset the timeout counter
+        
+        cout << "premutex" << endl;
         if(isWritten) //if we have ownership of the mutex
         {
+            cout << "hasmutex" << endl;
+            
+            Sleep(1000);
+            cout << "postsleep" << endl;
             fin.open("email.fifo"); //open the email.fifo file
-
             if(!fin.is_open())
             {
                 Sleep(100); //wait a little while before trying to open the file again
             }
             else
-            {
+            {cout << "inelse" << endl;
                 getline(fin, line); //get the first line from the file
 
                 while(line != ".") //while we don't read in a period, keep going. period denotes the end of a message
@@ -65,13 +74,15 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
                 remove("email.fifo"); //remove the file after we're done with it
                 isWritten = false; //set isWritten equal to false because now we read in and deleted the file
-
+                cout << "prewhilesent" << endl;
                 while(!isSent)
                 {
+                    cout << "notsentloop" << endl;
                     timeoutCount++; //adding one to the timeout count.
 
                     //connect to the server where the message should be going
                     fifoClient.connectToServer(message[1].substr(message[1].find("@")+1).c_str(), 31000);
+                    cout << "postnips" << endl;
 
                     //receive the first 220 message
                     serverFlop = fifoClient.recvData(recMessage);
@@ -80,7 +91,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                         fifoClient.closeConnection();
                         continue;
                     }
-
+                    cout << "postflopcheck" << endl;
                     if(recMessage.substr(0,3) == "220")
                     {
                         fifoClient.sendData("HELO 127.0.0.1");
@@ -91,14 +102,17 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                         continue;
                     }
 
+
+
                     serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+
 
                     if(serverFlop == -1) //check if the server flopped
                     {
                         fifoClient.closeConnection();
                         continue;
                     }
-
+                    cout << "postflopcheck2" << endl;
                     if(recMessage.substr(0,3) == "250") //send the login information as long as we got a 250 from the server first
                     {
                         //sendMessage = "VRFY " + message[2].substr(0, message[2].find("@"));
@@ -110,6 +124,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                         fifoClient.closeConnection();
                         continue;
                     }
+                    cout << "postloginsuccess" << endl;
 
                     serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
 
@@ -119,18 +134,19 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                         continue;
                     }
 
-                    if(recMessage.substr(0,3) == "550" || recMessage.substr(0,3) == "500") //if login fails, print error and close connection
+                    if(recMessage == "550" || recMessage == "500") //if login fails, print error and close connection
                     {
                         cout << "Invalid user when trying to login as guest...\n";
                         fifoClient.closeConnection(); //close connection
                         continue;
                     }
+                    cout << "postloginreal" << endl;
 
                     //send the message in the fifo queue
                     sendMessage = "MAIL FROM:<" + message[2] + ">";
                     fifoClient.sendData(sendMessage); //send the mail from command to the server
                     serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
-
+                    cout << "postmfrom" << endl;
                     if(serverFlop == -1) //check if the server flopped
                     {
                         fifoClient.closeConnection();
@@ -180,10 +196,22 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                         fifoClient.closeConnection();
                         continue;
                     }
-
+                    cout << "premagicnumbers" << endl;
                     int index = 3; //the position of message we should get data from
-                    while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
+                    for(int i = index; i < message.size(); i++)
                     {
+                        cout << "idx: " << i << " " << sendMessage << endl;
+                        sendMessage = message[index];
+
+                        if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
+                            sendMessage = "\n";
+
+                        fifoClient.sendData(sendMessage); //send the data, it's already encrypted
+                    }
+                    fifoClient.sendData(".");
+                    /*while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
+                    {
+                        cout << "idx: " << index << " " << sendMessage;
                         sendMessage = message[index];
 
                         if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
@@ -191,7 +219,8 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
                         fifoClient.sendData(sendMessage); //send the data, it's already encrypted
                         index++; //increment the index so we can get the next part of the message
-                    }
+                    }*/
+                    cout << "postmagicnumbers" << endl;
 
                     serverFlop = fifoClient.recvData(recMessage); //get data from server
 
@@ -224,14 +253,17 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                         fout.close();
                         break;
                     }
+
                 } //end of the sending while
 
                 //close connection to the server because we're done
+                cout << "preclose" << endl;
                 fifoClient.closeConnection();
+                cout << "postclose" << endl;
             } //end of the else
         } //end of the if checking the mutex result
-
-        Sleep(1000); //wait a little while before trying to open the file again
+        cout << "presleep" << endl;
+        Sleep(5000); //wait a little while before trying to open the file again
     } //end of the entire while loop
 
 }
