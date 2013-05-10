@@ -67,13 +67,13 @@ int main(int argc, char * argv[])
     serverFlop = sockClient.recvData(recMessage);
 
     //check if we logged in successfully
-    if(recMessage == "550" || recMessage == "500") //if login fails, print error and end program
+    if(recMessage.substr(0,3) == "550" || recMessage.substr(0,3) == "500") //if login fails, print error and end program
     {
         cout << "Invalid user...\n";
         sockClient.closeConnection(); //close connection
         return 1;
     }
-    else if(recMessage == "250")
+    else if(recMessage.substr(0,3) == "250")
     {
         cout << "Logon successful.\n\n";
     }
