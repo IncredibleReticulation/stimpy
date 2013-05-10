@@ -30,9 +30,6 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 {
     cout << "FIFO Thread Created\n";
 
-    //create a threadsock object and set our socket to the socket passed in as a parameter
-    ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
-
     string recMessage = ""; //will hold the command the client sent
     string sendMessage = ""; //will hold the reply we send
     vector<string> message;
@@ -70,6 +67,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
                 while(!isSent)
                 {
+                    ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
                     timeoutCount++; //adding one to the timeout count.
 
                     //connect to the server where the message should be going
