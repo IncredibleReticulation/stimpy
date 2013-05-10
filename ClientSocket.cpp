@@ -32,7 +32,7 @@ bool ClientSocket::checkError(string message, int error)
     {
         if(atoi(message.substr(0,3).c_str()) == 550)
         {
-            cout << "\n" << message.substr(4) << "\n\n";
+            cout << "\n" << (message.length() < 4 ? "Mailbox unavailable. You're either logged in as guest or don't have any messages." : message.substr(4)) << "\n\n";
             return false;
         }
 
