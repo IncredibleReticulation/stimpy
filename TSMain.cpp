@@ -339,8 +339,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                 string sSrvrT = recMessage.substr(recMessage.find("@")+1); //@ to end, including the >
                 string sSrvr = sSrvrT.substr(0, sSrvrT.length()-1); //@ to end, minus the bracet
-                cout << "User server: " << sSrvr << ">" << endl;
-                //cout << "recipient username: " << recMessage.substr(9, recMessage.find("@")-9) << endl; //for debugging
+
                 //checking to see if the user is valid
                 bool bLocalDelivery = FALSE;
 
