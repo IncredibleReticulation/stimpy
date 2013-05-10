@@ -179,6 +179,8 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                         break;
                     }
                 } //end of the sending while
+
+                //close connection to the server because we're done
                 fifoClient.closeConnection();
             } //end of the else
         } //end of the if checking the mutex result
