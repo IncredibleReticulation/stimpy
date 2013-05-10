@@ -32,7 +32,6 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
     //create a threadsock object and set our socket to the socket passed in as a parameter
     ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
-    //DWORD dwWaitResult;     //wait for instance
 
     string recMessage = ""; //will hold the command the client sent
     string sendMessage = ""; //will hold the reply we send
@@ -78,26 +77,55 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
                     //receive the first 220 message
                     serverFlop = fifoClient.recvData(recMessage);
+                    if(serverFlop == -1) //check if the server flopped
+                    {
+                        fifoClient.closeConnection();
+                        continue;
+                    }
+
                     if(recMessage.substr(0,3) == "220")
                     {
                         fifoClient.sendData("HELO 127.0.0.1");
                     }
+                    else
+                    {
+                        fifoClient.closeConnection();
+                        continue;
+                    }
 
                     serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+
+                    if(serverFlop == -1) //check if the server flopped
+                    {
+                        fifoClient.closeConnection();
+                        continue;
+                    }
+
                     if(recMessage.substr(0,3) == "250") //send the login information as long as we got a 250 from the server first
                     {
                         //sendMessage = "VRFY " + message[2].substr(0, message[2].find("@"));
                         sendMessage = "VRFY guest"; //login using guest account
                         fifoClient.sendData(sendMessage);
                     }
+                    else //if we can't login, close connection
+                    {
+                        fifoClient.closeConnection();
+                        continue;
+                    }
 
                     serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
+
+                    if(serverFlop == -1) //check if the server flopped
+                    {
+                        fifoClient.closeConnection();
+                        continue;
+                    }
 
                     if(recMessage == "550" || recMessage == "500") //if login fails, print error and close connection
                     {
                         cout << "Invalid user when trying to login as guest...\n";
                         fifoClient.closeConnection(); //close connection
-                        //break;
+                        continue;
                     }
 
                     //send the message in the fifo queue
@@ -105,33 +133,54 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                     fifoClient.sendData(sendMessage); //send the mail from command to the server
                     serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
 
+                    if(serverFlop == -1) //check if the server flopped
+                    {
+                        fifoClient.closeConnection();
+                        continue;
+                    }
+
                     //check for an error
                     if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                     {
                         cout << recMessage << endl;
-                        //break; //break if we found one
+                        fifoClient.closeConnection();
+                        continue;
                     }
 
                     sendMessage = "RCPT TO:<" + message[1] + ">"; //set what we're sending
                     fifoClient.sendData(sendMessage); //send data
                     serverFlop = fifoClient.recvData(recMessage); //get response
 
+                    if(serverFlop == -1) //check if the server flopped
+                    {
+                        fifoClient.closeConnection();
+                        continue;
+                    }
+
                     //check for an error
                     if(!fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                     {
                         cout << recMessage << endl;
-                        //break; //break if we found one
+                        fifoClient.closeConnection();
+                        continue;
                     }
 
                     //send data command to the server and get a response
                     fifoClient.sendData("DATA"); //send that we're ready to send data
                     serverFlop = fifoClient.recvData(recMessage); //get the response
 
+                    if(serverFlop == -1) //check if the server flopped
+                    {
+                        fifoClient.closeConnection();
+                        continue;
+                    }
+
                     //check for an error
                     if(!fifoClient.checkError(recMessage, Status::SMTP_BEGIN_MSG))
                     {
                         cout << recMessage << endl;
-                        //break; //break if we found one
+                        fifoClient.closeConnection();
+                        continue;
                     }
 
                     int index = 3; //the position of message we should get data from
@@ -148,6 +197,12 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
                     serverFlop = fifoClient.recvData(recMessage); //get data from server
 
+                    if(serverFlop == -1) //check if the server flopped
+                    {
+                        fifoClient.closeConnection();
+                        continue;
+                    }
+
                     //check for an error, if there was an error we need to try this entire loop again
                     if(fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                     {
@@ -158,13 +213,6 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                     {
                         cerr << "Error sending message. Please retry in a few minutes. :(\n\n";
                         isSent = false;
-                    }
-
-                    if(serverFlop == -1) //if the server disconnects unexpectedly break from the while loop
-                    {
-                        isSent = false;
-                        //break; //not sure if we want to break from the while loop or not, because then the message will not be sent and the file
-                                //will be deleted without being sent anywhere. maybe we should write it to another text file if doesn't send? idk
                     }
 
                     if (timeoutCount == 3 && !isSent) //if the count gets to three, write to the log file
