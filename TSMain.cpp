@@ -380,10 +380,10 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         {
                             while(!canWrite)
                             {
-                                //cout << "in the while\n";
+                                cout << "in the while\n";
                                 if(!isWritten)
                                 {
-                                    //cout << "get here\n";
+                                    cout << "get here\n";
                                     fout.open("email.fifo", ios::app);
                                     canWrite = true;
                                 }
