@@ -47,7 +47,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
         int timeoutCount = 0; //timeout counter
         ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
         timeoutCount = 0; //reset the timeout counter
-        
+
         cout << "premutex" << endl;
         if(isWritten) //if we have ownership of the mutex
         {
@@ -197,11 +197,11 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                         continue;
                     }
                     cout << "premagicnumbers" << endl;
-                    int index = 3; //the position of message we should get data from
-                    for(int i = index; i < message.size(); i++)
+                    
+                    for(int i = 3; i < message.size(); i++)
                     {
                         cout << "idx: " << i << " " << sendMessage << endl;
-                        sendMessage = message[index];
+                        sendMessage = message[i];
 
                         if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
                             sendMessage = "\n";
@@ -367,7 +367,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                 string sSrvrT = recMessage.substr(recMessage.find("@")+1); //@ to end, including the >
                 string sSrvr = sSrvrT.substr(0, sSrvrT.length()-1); //@ to end, minus the bracet
-                //cout << "User server: " << sSrvr << ">" << endl;
+                cout << "User server: " << sSrvr << ">" << endl;
                 //cout << "recipient username: " << recMessage.substr(9, recMessage.find("@")-9) << endl; //for debugging
                 //checking to see if the user is valid
                 bool bLocalDelivery = FALSE;
@@ -498,6 +498,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         else
         {
             cout << "Client didn't send 'MAIL FROM' or 'INBOX' in the beginning\n";
+            cout << "They actually sent: " << recMessage << endl;
             current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
         }
 
