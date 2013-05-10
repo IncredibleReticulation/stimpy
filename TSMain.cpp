@@ -41,6 +41,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
     while(true) //endless loop to open the fifo file and send the email in it
     {
+        ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
         timeoutCount = 0; //reset the timeout counter
         if(isWritten) //if we have ownership of the mutex
         {
@@ -67,7 +68,6 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
                 while(!isSent)
                 {
-                    ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
                     timeoutCount++; //adding one to the timeout count.
 
                     //connect to the server where the message should be going
