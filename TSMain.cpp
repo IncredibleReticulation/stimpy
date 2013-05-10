@@ -233,6 +233,8 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                 {
                     fifoClient.closeConnection();
                 }
+
+                isWritten = false; ///adding this so it doesn't shiot the bed
             } //end of the else
         } //end of the if checking the mutex result
         Sleep(5000); //wait a little while before trying to open the file again
@@ -331,17 +333,18 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 //sRecipient = recMessage.substr(9, recMessage.find("@")-9);
                 sRecipient = recMessage.substr(9, recMessage.length()-10); //the entire string including IP Address
 
+                //checking to see if the user is valid
+                bool bLocalDelivery = FALSE;
+
                 if (sRecipient.find("@") == -1)
                 {
                     cout << "Assuming this is a local address\n";
                     sRecipient += "@" + sSrvrIP;
+                    bLocalDelivery = TRUE;
                 }
 
                 string sSrvrT = recMessage.substr(recMessage.find("@")+1); //@ to end, including the >
                 string sSrvr = sSrvrT.substr(0, sSrvrT.length()-1); //@ to end, minus the bracet
-
-                //checking to see if the user is valid
-                bool bLocalDelivery = FALSE;
 
                 if ((sSrvr == "127.0.0.1" || sSrvr == sSrvrIP || sSrvr == ""))
                 {
@@ -380,10 +383,8 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         {
                             while(!canWrite)
                             {
-                                cout << "in the while\n";
                                 if(!isWritten)
                                 {
-                                    cout << "get here\n";
                                     fout.open("email.fifo", ios::app);
                                     canWrite = true;
                                 }
