@@ -30,14 +30,8 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 {
     cout << "FIFO Thread Created\n";
 
-    //create a threadsock object and set our socket to the socket passed in as a parameter
-    
-
-   
-
     while(true) //endless loop to open the fifo file and send the email in it
     {
-        cout << "                                 MAINLOOP" << endl;
         string recMessage = ""; //will hold the command the client sent
         string sendMessage = ""; //will hold the reply we send
         vector<string> message;
@@ -50,20 +44,15 @@ DWORD WINAPI relayMail(LPVOID lpParam)
         ClientSocket fifoClient; //create an instance of clientsocket called fifoClient
         timeoutCount = 0; //reset the timeout counter
 
-        cout << "premutex" << endl;
         if(isWritten) //if we have ownership of the mutex
         {
-            cout << "hasmutex" << endl;
-            
-            Sleep(1000);
-            cout << "postsleep" << endl;
             fin.open("email.fifo"); //open the email.fifo file
             if(!fin.is_open())
             {
                 Sleep(100); //wait a little while before trying to open the file again
             }
             else
-            {cout << "inelse" << endl;
+            {
                 getline(fin, line); //get the first line from the file
 
                 while(line != ".") //while we don't read in a period, keep going. period denotes the end of a message
@@ -76,17 +65,14 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
                 remove("email.fifo"); //remove the file after we're done with it
                 isWritten = false; //set isWritten equal to false because now we read in and deleted the file
-                cout << "prewhilesent" << endl;
+
                 while(!isSent)
                 {
-                    cout << "                                 UNSENTLOOP" << endl;
-                    cout << "notsentloop" << endl;
                     timeoutCount++; //adding one to the timeout count.
 
                     //connect to the server where the message should be going
                     if(!fifoClient.connectToServer(message[1].substr(message[1].find("@")+1).c_str(), 31000))
                     {
-                        cout << "In that fts shit" << endl;
                         ofstream fout;
                         fout.open("fts.flop", ios::app); //opening the new flop
 
@@ -99,10 +85,6 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                     }
                     else
                     {
-                        cout << "                                 UNSENTLOOP AFTER CHECK" << endl;
-
-                        cout << "postnips" << endl;
-
                         //receive the first 220 message
                         serverFlop = fifoClient.recvData(recMessage);
                         if(serverFlop == -1) //check if the server flopped
@@ -110,7 +92,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                             fifoClient.closeConnection();
                             continue;
                         }
-                        cout << "postflopcheck" << endl;
+
                         if(recMessage.substr(0,3) == "220")
                         {
                             fifoClient.sendData("HELO 127.0.0.1");
@@ -121,17 +103,14 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                             continue;
                         }
 
-
-
                         serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
-
 
                         if(serverFlop == -1) //check if the server flopped
                         {
                             fifoClient.closeConnection();
                             continue;
                         }
-                        cout << "postflopcheck2" << endl;
+
                         if(recMessage.substr(0,3) == "250") //send the login information as long as we got a 250 from the server first
                         {
                             //sendMessage = "VRFY " + message[2].substr(0, message[2].find("@"));
@@ -143,7 +122,6 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                             fifoClient.closeConnection();
                             continue;
                         }
-                        cout << "postloginsuccess" << endl;
 
                         serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
 
@@ -159,13 +137,11 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                             fifoClient.closeConnection(); //close connection
                             continue;
                         }
-                        cout << "postloginreal" << endl;
 
                         //send the message in the fifo queue
                         sendMessage = "MAIL FROM:<" + message[2] + ">";
                         fifoClient.sendData(sendMessage); //send the mail from command to the server
                         serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
-                        cout << "postmfrom" << endl;
                         if(serverFlop == -1) //check if the server flopped
                         {
                             fifoClient.closeConnection();
@@ -215,30 +191,18 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                             fifoClient.closeConnection();
                             continue;
                         }
-                        cout << "premagicnumbers" << endl;
+
                         for(int i = 3; i < message.size(); i++)
                         {
-                            cout << "idx: " << i << " " << sendMessage << endl;
                             sendMessage = message[i];
 
                             if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
                                 sendMessage = "\n";
+
                             Sleep(250);
                             fifoClient.sendData(sendMessage); //send the data, it's already encrypted
                         }
                         fifoClient.sendData(".");
-                        /*while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
-                        {
-                            cout << "idx: " << index << " " << sendMessage;
-                            sendMessage = message[index];
-
-                            if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
-                                sendMessage = "\n";
-
-                            fifoClient.sendData(sendMessage); //send the data, it's already encrypted
-                            index++; //increment the index so we can get the next part of the message
-                        }*/
-                        cout << "postmagicnumbers" << endl;
 
                         serverFlop = fifoClient.recvData(recMessage); //get data from server
 
@@ -247,8 +211,6 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                             fifoClient.closeConnection();
                             continue;
                         }
-
-
                         
                         //check for an error, if there was an error we need to try this entire loop again
                         if(fifoClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
@@ -269,15 +231,10 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                 //close connection to the server because we're done
                 if(!isFTS)
                 {
-                    cout << "preclose" << endl;
                     fifoClient.closeConnection();
-                    cout << "postclose" << endl;
                 }
-                else
-                    cout << "My shit is flopped" << endl;
             } //end of the else
         } //end of the if checking the mutex result
-        cout << "presleep" << endl;
         Sleep(5000); //wait a little while before trying to open the file again
     } //end of the entire while loop
 
@@ -513,30 +470,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         else
         {
             cout << "Client didn't send 'MAIL FROM' or 'INBOX' in the beginning\n";
-            cout << "They actually sent: " << recMessage << endl;
-            cout << "clientFlop: " << clientFlop << endl;
-
-            if (clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
-            {
-                cout << "Balls" << endl;
-                recMessage = "QUIT";
-                break;
-            }
-
-
-            
             current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
-        }
-
-        if (clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
-        {
-            break;
-        }
-cout << "Testicles" << endl;
-        if(upCase(recMessage) == "QUIT")
-        {
-            //current_client.sendResponse(Status::SMTP_SRV_CLOSE, "OK -- Goodbye...");
-            break;
         }
 
         //get data from the client before starting loop again
@@ -623,7 +557,7 @@ int main(int argc, char * argv[])
         //accept connections
         client = accept(sock,(struct sockaddr*)&from,&fromlen);
         cout << "Client connected.\n";
-        //create our recv_cmds thread and pass client socket as a parameter
+        //create our handleMail thread and pass client socket as a parameter
         CreateThread(NULL, 0,handleMail,(LPVOID)client, 0, &thread2);
     }
 
