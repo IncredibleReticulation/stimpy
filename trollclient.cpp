@@ -83,8 +83,9 @@ int main(int argc, char * argv[])
         return -69; //ends program
     }
 
-    string menu = "1. Send infinite data\n2. Send Read Inbox Forever\n3. Send bad command forever\n4. Send VRFY forever\n";
-    menu += "5. Send the same email forever (takes a little bit of time)\n6. Quit\n"; //our menu of options
+    //menu options
+    string menu = "1. Send mad data\n2. Send read inbox a lot\n3. Send bad command a lot\n4. Send VRFY a lot\n";
+    menu += "5. Send the same email a lot (takes a little bit of time)\n6. Quit\n";
     int option = 1;
 
     while(option != 6) //while they don't enter 3 for the quit option, keep prompting for selection
@@ -106,7 +107,12 @@ int main(int argc, char * argv[])
         string recipient; //will hold the recipient
         int messageCount = 0; //will count how many messages we have received. for formatting purposes
         int lineCount = 0; //will count how many lines per message were sent. needed to know when to data is being sent
-        int numLines = 0;
+        int numLines = 0; //will hold number of lines of data or commands
+        int numMessages = 0; //will hold number of emails to send
+        char choice = ' '; //will hold the choice of whether they want to send real or garbage data for option 5
+        vector<string> messageHolder; //will hold the message when we send the same message multiple times
+        vector<string> headerHolder; //will hold the header of the message when we send the same message a lot
+        string badCommand = ""; //will hold the bad command we want to send
         string messBuf = ""; //will hold the entire message and act as a buffer before printing it
 
         switch(option)
@@ -124,7 +130,6 @@ int main(int argc, char * argv[])
                     break; //break if we found one
                 }
                     
-
                 //get recipient of the email
                 cout << "Enter the recipient's email address (user@1.2.3.4): "; //prompts for recipient
                 cin >> recipient; //get the recipient
@@ -140,7 +145,6 @@ int main(int argc, char * argv[])
                     cout << recMessage << endl;
                     break; //break if we found one
                 }
-
 
                 //send data to the server and get a response
                 sockClient.sendData("DATA"); //send that we're ready to send data
@@ -172,9 +176,7 @@ int main(int argc, char * argv[])
                 }
                 
                 sockClient.sendData("."); //send final period
-
                 cout << "Payload complete.\n\n";
-
                 break; //break from case
             case 2: //option 2, to read messages in the user's mailbox
                 cout << "how many times would you like to send INBOX? (0 means infinite): ";
@@ -195,14 +197,208 @@ int main(int argc, char * argv[])
                     }
                 }
 
-                cout << "Payload complete.\n";
-                // cout << "End of the inbox!\n\n"; //letting the client know it's the end of their inbox
+                cout << "Payload complete.\n\n";
                 break;
-            case 6: //option 3, to quit
+            case 3:
+                cout << "How many bad commands would you like to send (0 means infinite): ";
+                cin >> numLines;
+
+                cout << "What bad command would you like to send: ";
+                cin.ignore(1000, '\n');
+                getline(cin, badCommand);
+
+                if(numLines == 0)
+                {
+                    while(true)
+                    {
+                        sockClient.sendData(badCommand);
+                    }
+                }
+                else
+                {
+                    for(int i = 0; i < numLines; i++)
+                    {
+                        sockClient.sendData(badCommand);
+                    }
+                }
+
+                cout << "Payload complete.\n\n";
+                break;
+            case 4:
+                cout << "How many times would you like to send VRFY (0 means infinite): ";
+                cin >> numLines;
+
+                if(numLines == 0)
+                {
+                    while(true) //send forever
+                    {
+                        sockClient.sendData((numLines++ % 2 == 0 ? "VRFY TROLL" : "VRFY ")); //send the data
+                    }
+                }
+                else
+                {
+                    for(int i = 0; i < numLines; i++) //send for user specified amount
+                    {
+                        sockClient.sendData(((numLines % 2 == 0 ? "VRFY TROLL" : "VRFY "))); //send the data
+                    }
+                }
+
+                cout << "Payload complete.\n\n";
+                break;
+            case 5:
+                cout << "How many times would you like to send this email: ";
+                cin >> numMessages;
+
+                cout << "Who would you like this email to be from (IP optional): ";
+                cin >> username;
+
+                //send who the mail is from and receive response
+                sendMessage = "MAIL FROM:<";
+                sendMessage += (username.find("@") == -1 ? username + "@" + ipAddress + ">" : username + ">"); //set what we're sending;
+
+                //check to make sure it has an ip after the @ symbol
+                if(username.find("@")+1 == username.length())
+                    username.insert(username.length()-2, ipAddress);
+
+                headerHolder.push_back(sendMessage); //get the MAIL FROM command in this vector
+
+                //get recipient of the email
+                cout << "Enter the recipient's email address (user@1.2.3.4): "; //prompts for recipient
+                cin >> recipient; //get the recipient
+
+                //send recipient of the email
+                sendMessage = "RCPT TO:<" + recipient + ">"; //set what we're sending
+                headerHolder.push_back(sendMessage); //put the RCPT command in this vector
+                
+                //send message loop
+                for(int i = 0; i < numMessages; i++)
+                {
+                    if(toupper(choice) == 'N') //if they want garbage data
+                    {
+                        if(i == 0)
+                        {
+                            cout << "How many lines of garbage data would you like to send: ";
+                            cin >> numLines;
+                            if(numLines == 0)
+                                numLines = 1;
+                        }
+
+                        sockClient.sendData(headerHolder[0]); //send mail from command
+                        serverFlop = sockClient.recvData(recMessage); //get the response from the server
+
+                        //check for an error
+                        if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                        {
+                            cout << recMessage << endl << "Trying again...\n";
+                            continue; //break if we found one
+                        }
+
+                        sockClient.sendData(headerHolder[1]); //send data
+                        serverFlop = sockClient.recvData(recMessage); //get response
+
+                        //check for an error
+                        if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                        {
+                            cout << recMessage << endl << "Trying again...\n";
+                            continue; //break if we found one
+                        }
+
+                        //send data to the server and get a response
+                        sockClient.sendData("DATA"); //send that we're ready to send data
+                        serverFlop = sockClient.recvData(recMessage); //get the response
+
+                        //check for an error
+                        if(!sockClient.checkError(recMessage, Status::SMTP_BEGIN_MSG))
+                            continue; //break if we found one
+
+                        for(int j = 0; j < numLines; j++)
+                        {
+                            sockClient.sendData("YOU ARE BEING TROLLED. TROLOLOL. YOU ARE BEING TROLLED. TROLOLOL."); //send data
+                        }
+
+                        sockClient.sendData("."); //send the period
+                        serverFlop = sockClient.recvData(recMessage); //get response from the server
+
+                        //check for an error
+                        if(sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                            cout << "Message sent successfully! :)\n";
+                        else
+                            cerr << "Error sending message. :(\n";
+                    }
+                    else //if they want to put in their own data
+                    {
+                        if(i == 0)
+                        {
+                            //get data from client and put it in the messageHolder vector
+                            cout << "Enter data. Press '.' when the message is over.\n"; //prompt for data
+                            cin.ignore(10000, '\n'); //ignore any newlines
+                            //getline(cin, sendMessage); //get the message to send
+                            
+                            while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
+                            {
+                                cout << "Data > "; //prompt for data
+                                getline(cin, sendMessage); //get the message to send
+
+                                if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
+                                    sendMessage = "\n";
+
+                                messageHolder.push_back(sendMessage); //put the message in our message holder vector
+                            }
+
+                            cout << "Data entered successfully. Now attempting to send this message " << numMessages << " times\n";
+                        }
+
+                        sockClient.sendData(headerHolder[0]); //send mail from command
+                        serverFlop = sockClient.recvData(recMessage); //get the response from the server
+
+                        //check for an error
+                        if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                        {
+                            cout << recMessage << endl << "Trying again...\n";
+                            continue; //break if we found one
+                        }
+
+                        sockClient.sendData(headerHolder[1]); //send data
+                        serverFlop = sockClient.recvData(recMessage); //get response
+
+                        //check for an error
+                        if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                        {
+                            cout << recMessage << endl << "Trying again...\n";
+                            continue; //break if we found one
+                        }
+
+                        //send data to the server and get a response
+                        sockClient.sendData("DATA"); //send that we're ready to send data
+                        serverFlop = sockClient.recvData(recMessage); //get the response
+
+                        //check for an error
+                        if(!sockClient.checkError(recMessage, Status::SMTP_BEGIN_MSG))
+                            continue; //break if we found one
+
+                        for(int j = 0; j < messageHolder.size(); j++)
+                        {
+                            sockClient.sendData(messageHolder[j]); //send
+                        }
+
+                        //get response after sending data and print status message for user
+                        cout << "Sending data. Waiting for server...\n";
+                        serverFlop = sockClient.recvData(recMessage); //get data from server
+
+                        //check for an error
+                        if(sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
+                            cout << "Message sent successfully! :)\n";
+                        else
+                            cerr << "Error sending message. :(\n";
+                    }
+                }
+                
+                cout << "Payload complete.\n\n";
+                break;
+            case 6: //option 6, to quit
                 //code
                 cout << "You chose to quit, goodbye.\n\n";
-                sockClient.sendData("QUIT"); //send quit to the server so it knows we're disconnecting
-                //sockClient.recvData(recMessage); //get the final message
+                //sockClient.sendData("QUIT"); //send quit to the server so it knows we're disconnecting
                 break;
             default:
                 cerr << "You entered an invalid command...\n";
