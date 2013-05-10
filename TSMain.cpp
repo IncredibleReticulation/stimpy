@@ -239,21 +239,17 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     //checking to see if it's a verify
     if (upCase(recMessage.substr(0,4)) == "VRFY")
     {
-        username = recMessage.substr(5); //trim the username
+        username = recMessage.substr(5); //get the username from the command the user sent
 
         //if it is, validate the username and continue
         if (current_client.validateUser(username))
         {
             current_client.sendData(Status::SMTP_ACTION_COMPLETE); //if the username was valid, send back 250
         }
-        else if (username == "guest" || username == "Guest" || username == "GUEST")//checking to see if the user account is guest
+        else //make any other username that tries to login, a guest account
         {
             isGuest = true; //changing the value of the bool to true
             current_client.sendData(Status::SMTP_ACTION_COMPLETE);
-        }
-        else
-        {
-            current_client.sendData(Status::SMTP_MBOX_UNAV);
         }
     }
 
