@@ -505,9 +505,14 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         //get data from the client before starting loop again
         clientFlop = current_client.recvData(recMessage);
 
-        if(upCase(recMessage) == "QUIT" || clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
+        if(upCase(recMessage) == "QUIT")
         {
             current_client.sendResponse(Status::SMTP_SRV_CLOSE, "OK -- Goodbye...");
+            break;
+        }
+
+        if (clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
+        {
             break;
         }
 
