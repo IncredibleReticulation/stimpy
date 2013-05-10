@@ -170,6 +170,8 @@ int main(int argc, char * argv[])
                 cout << "Sending data. Waiting for server...\n";
                 serverFlop = sockClient.recvData(recMessage); //get data from server
 
+                cout << recMessage << endl;
+
                 //check for an error
                 if(sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                     cout << "Message sent successfully! :)\n\n";
