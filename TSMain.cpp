@@ -204,10 +204,10 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
                         if(sendMessage == "") //check if it's an empty string, if so add a newline because a getline drops that
                             sendMessage = "\n";
-                        //Sleep(250);
+                        Sleep(250);
                         fifoClient.sendData(sendMessage); //send the data, it's already encrypted
                     }
-                    fifoClient.sendData("\n.");
+                    fifoClient.sendData(".");
                     /*while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
                     {
                         cout << "idx: " << index << " " << sendMessage;
