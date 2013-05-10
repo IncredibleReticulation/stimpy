@@ -121,7 +121,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                         continue;
                     }
 
-                    if(recMessage == "550" || recMessage == "500") //if login fails, print error and close connection
+                    if(recMessage.substr(0,3) == "550" || recMessage.substr(0,3) == "500") //if login fails, print error and close connection
                     {
                         cout << "Invalid user when trying to login as guest...\n";
                         fifoClient.closeConnection(); //close connection
