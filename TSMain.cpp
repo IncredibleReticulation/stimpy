@@ -17,7 +17,7 @@
 using namespace std;
 
 string sSrvrIP; //global variable which holds the IP address of the server
-HANDLE mailMutex; //Golbal Mutex Variable
+bool isWritten = false; //global boolean which will indicate whether or not we have written to the fifo file
 
 string upCase(string str)
 {
@@ -40,20 +40,13 @@ DWORD WINAPI relayMail(LPVOID lpParam)
     string line = ""; //will hold each line we read in from the file
     int serverFlop = 0; //will hold value given by recv function and will be -1 if the server flops and shuts down
     ifstream fin; //file input object to read stuff in from the message fifo queue
-    bool isSent = false;
-    int timeoutCount = 0;
+    bool isSent = false; //bool that will hold if the message sent to the server successfully
+    int timeoutCount = 0; //timeout counter
 
     while(true) //endless loop to open the fifo file and send the email in it
     {
-        //see: http://msdn.microsoft.com/en-us/library/ms687032%28v=vs.85%29.aspx
-        //cout << "before wait in fifo thread\n";
-        // dwWaitResult = WaitForSingleObject( 
-        //     mailMutex,    // handle to mutex
-        //     INFINITE);  // no time-out interval
-        //cout << "after wait in fifo thread\n";
-        dwWaitResult = WAIT_OBJECT_0;
-
-        if(dwWaitResult == WAIT_OBJECT_0) //if we have ownership of the mutex
+        timeoutCount = 0; //reset the timeout counter
+        if(isWritten) //if we have ownership of the mutex
         {
             fin.open("email.fifo"); //open the email.fifo file
 
@@ -74,7 +67,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                 fin.close(); //close file; done reading stuff in
 
                 remove("email.fifo"); //remove the file after we're done with it
-                //ReleaseMutex(mailMutex); //release the mutex from the thread
+                isWritten = false; //set isWritten equal to false because now we read in and deleted the file
 
                 while(!isSent)
                 {
@@ -100,9 +93,9 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
                     serverFlop = fifoClient.recvData(recMessage); //receive next status message from server
 
-                    if(recMessage == "550" || recMessage == "500") //if login fails, print error and end program
+                    if(recMessage == "550" || recMessage == "500") //if login fails, print error and close connection
                     {
-                        cout << "Invalid user...\n";
+                        cout << "Invalid user when trying to login as guest...\n";
                         fifoClient.closeConnection(); //close connection
                         //break;
                     }
@@ -202,7 +195,6 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     //set our socket to the socket passed in as a parameter
     ThreadSock current_client;
     current_client.setSock((SOCKET)lpParam);
-    DWORD dwWaitResult;     //wait for instance
 
     string recMessage = ""; //will hold the command the client sent
     string sendMessage = ""; //will hold the reply we send
@@ -257,20 +249,20 @@ DWORD WINAPI handleMail(LPVOID lpParam)
     clientFlop = current_client.recvData(recMessage);
 
     //our send/recv loop
-    while(upCase(recMessage) != "QUIT" || recMessage != "Quit" || recMessage != "quit")
+    while(upCase(recMessage) != "QUIT")
     {
 		bool bRecipientSent = FALSE;
-        bool isOwned = false; //will hold if the data has been sent and written to file
+        bool canWrite = false; //will be true if this thread can write to the file
 		string sRecipient = "";
 
         if(upCase(recMessage.substr(0,9)) == "MAIL FROM")
         {
             string sender = recMessage.substr(11, recMessage.length()-12);
-            cout << "Sender  = " << sender << endl;
+            //cout << "Sender  = " << sender << endl;
 
             if (sender.find("@") == -1)
             {
-                cout << "Assuming this is a local address\n";
+                //cout << "Assuming this is a local address\n";
                 sender += "@" + sSrvrIP;
             }
             
@@ -288,7 +280,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             }
             else
             {
-                cout << "Client Send: " << recMessage << endl; //for debugging
+                cout << "Client Sent: " << recMessage << endl; //for debugging
                 //sRecipient = recMessage.substr(9, recMessage.find("@")-9);
                 sRecipient = recMessage.substr(9, recMessage.length()-10); //the entire string including IP Address
                 string sSrvrT = recMessage.substr(recMessage.find("@")+1); //@ to end, including the >
@@ -333,29 +325,17 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                             fout.open ((string(sRecipient.substr(0,sRecipient.find("@")) + ".txt")).c_str(), ios::app);
                         else //if on a different server and needs to be relayed
                         {
-                            //cout << "before while loop\n";
-                            while(!isOwned)
+                            while(!canWrite)
                             {
-                                //cout << "after while loop, before wait call\n";
-                                //IT BREAKS WHEN RIGHT HERE. it never gets to the cout after calling this function to wait IDK why dad
-                                // dwWaitResult = WaitForSingleObject(
-                                //     mailMutex,    // handle to mutex
-                                //     INFINITE);   // no time-out interval
-                                dwWaitResult = WAIT_OBJECT_0;
-
-                                //cout << "after waiting for single object\n";
-
-                                if(dwWaitResult == WAIT_OBJECT_0)
+                                if(!isWritten)
                                 {
-                                    cout << "in if inside of while\n";
                                     fout.open("email.fifo", ios::app);
-                                    isOwned = true;
+                                    canWrite = true;
                                 }
                             }
                         }
 
                         //write the initial part of the email
-                        //fout << "\"" << current_client.getDateTime() << "\",\"" << sRecipient << "\",\"" << username << "\",\"";
                         fout << current_client.getDateTime() << endl << sRecipient << endl << sender << endl;
 
                         //tell client to send data, then get data and write to file
@@ -377,17 +357,13 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                             clientFlop = current_client.recvData(recMessage); //getting next line from the user
                         }
 
-                        //write the final quotation and add a newline to the end of it
-                        //fout << "\"" << endl;
-                        //char del = 236;
+                        //write a . to denote the end of the message
                         fout << "." << endl;
 
                         //send status code that action is complete and close the file
                         current_client.sendData(Status::SMTP_ACTION_COMPLETE);
                         fout.close();
-
-                        // if(!bLocalDelivery) //if it was not local, we used a mutex and need to release it
-                        //     ReleaseMutex(mailMutex); //Release the mutex from the thread
+                        isWritten = true; //set this to true because the file is now written
                     }
                 }
             }
@@ -512,11 +488,6 @@ int main(int argc, char * argv[])
     sockaddr_in from;
     int fromlen = sizeof(from);
 
-    // mailMutex = CreateMutex( 
-    //     NULL,              // default security attributes
-    //     FALSE,             // initially not owned
-    //     NULL);             // unnamed mutex
-
     //create our fifo thread only once because it will loop continuously
     CreateThread(NULL, 0,relayMail,(LPVOID)NULL, 0, &thread);
 
@@ -531,7 +502,6 @@ int main(int argc, char * argv[])
     }
 
     WSACleanup(); //windows cleanup
-    //CloseHandle(mailMutex); //Close the Handle for Mutex
 
     return 0; //ends program
 }
