@@ -197,7 +197,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                         continue;
                     }
                     cout << "premagicnumbers" << endl;
-                    
+                    message.push_back(".");
                     for(int i = 3; i < message.size(); i++)
                     {
                         cout << "idx: " << i << " " << sendMessage << endl;
