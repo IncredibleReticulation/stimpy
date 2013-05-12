@@ -30,4 +30,5 @@ class ThreadSock{
 		bool validateUser(string);
 		void setSock(SOCKET);
 		string getDateTime();
+		void closeConnection();
 };

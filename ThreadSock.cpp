@@ -132,3 +132,8 @@ string ThreadSock::getDateTime()
 
     return (date + ", " + time);
 }
+
+void ThreadSock::closeConnection()
+{
+    closesocket(socket); //close our socket
+}

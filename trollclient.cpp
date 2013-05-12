@@ -74,7 +74,7 @@ int main(int argc, char * argv[])
             if(toupper(trollChoice) == 'Y')
                 sockClient.sendData("QUIT");
 
-            cout << "You chose to quit, goodbye.\n\n";
+            cout << "\nHappy trolling. :3\n\n";
         }
         
         sockClient.closeConnection(); //closes connection
@@ -109,6 +109,12 @@ int main(int argc, char * argv[])
 
     //receive server response after login
     serverFlop = sockClient.recvData(recMessage);
+
+    if(serverFlop == -1)
+    {
+        cout << "They flopped.\n";
+        return 69;
+    }
 
     //check if we logged in successfully
     if(recMessage.substr(0,3) == "550" || recMessage.substr(0,3) == "500") //if login fails, print error and end program
@@ -451,7 +457,7 @@ int main(int argc, char * argv[])
                     }
                 }
                 
-                cout << "Payload complete.\n\n";
+                cout << "\nPayload complete.\n\n";
                 break;
             case 6: //option 6, to quit
                 //code
@@ -461,7 +467,7 @@ int main(int argc, char * argv[])
                 if(toupper(choice) == 'Y')
                     sockClient.sendData("QUIT");
 
-                cout << "You chose to quit, goodbye.\n\n";
+                cout << "Happy trolling. :3\n\n";
                 break;
             default:
                 cerr << "You entered an invalid command...\n";

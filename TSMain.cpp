@@ -496,6 +496,8 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         }
 
     } //end of while
+
+    current_client.closeConnection(); //close socket connection with the client
 }
 
 int main(int argc, char * argv[])
