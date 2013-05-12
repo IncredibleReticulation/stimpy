@@ -121,7 +121,6 @@ int main(int argc, char * argv[])
                     cout << recMessage << endl;
                     break; //break if we found one
                 }
-                    
 
                 //get recipient of the email
                 cout << "Enter the recipient's email address (user@1.2.3.4): "; //prompts for recipient
@@ -135,10 +134,9 @@ int main(int argc, char * argv[])
                 //check for an error
                 if(!sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
                 {
-                    cout << recMessage << endl;
+                    cout << recMessage << endl << endl;
                     break; //break if we found one
                 }
-
 
                 //send data to the server and get a response
                 sockClient.sendData("DATA"); //send that we're ready to send data
@@ -253,14 +251,11 @@ int main(int argc, char * argv[])
 string trim(string s)
 {   
     while(isspace(s[0])) //if the first thing is a space, erase it until it is longer a space.
-    {
         s.erase(0, 1); //remove the first index because it is a space
-    }
 
     while(isspace(s[s.length()-1])) //if the last char of the string is a space, remove it until it is no longer a space
-    {
+
         s.erase(s.length()-1, 1); //remove that char because it is a space
-    }
 
     return s; //return the final string
 }

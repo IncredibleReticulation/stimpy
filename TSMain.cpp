@@ -21,7 +21,7 @@ bool isWritten = false; //global boolean which will indicate whether or not we h
 
 string upCase(string str)
 {
-    std::transform(str.begin(), str.end(),str.begin(), ::toupper);
+    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
     return str;
 }
 
