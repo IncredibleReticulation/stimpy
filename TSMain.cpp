@@ -233,9 +233,9 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                 {
                     fifoClient.closeConnection();
                 }
-
-                isWritten = false; ///adding this so it doesn't shiot the bed
             } //end of the else
+
+            isWritten = false; ///adding this so it doesn't shit the bed
         } //end of the if checking the mutex result
         Sleep(5000); //wait a little while before trying to open the file again
     } //end of the entire while loop
