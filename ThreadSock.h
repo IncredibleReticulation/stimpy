@@ -14,7 +14,8 @@
 
 using namespace std;
 
-class ThreadSock{
+class ThreadSock
+{
 	private:
 		SOCKET socket;
 		vector<string> users; //holds all of the local usernames
@@ -26,7 +27,6 @@ class ThreadSock{
 		bool sendData(int);
 		bool sendResponse(int,string);
 		int recvData(string&);
-		int split(vector<string>*, string, string);
 		bool validateUser(string);
 		void setSock(SOCKET);
 		string getDateTime();

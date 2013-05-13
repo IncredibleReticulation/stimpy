@@ -7,10 +7,10 @@
 #include <fstream>
 #include "ClientSocket.h"
 
-//Name: listFiles()
-//Parameters: NOT KNOWN YET
-//Purpose: This function lists all of the files that are avalible for tansfer
-//Returns: NOT KNOWN YET
+//Name: connectToServer()
+//Parameters: char array, int
+//Purpose: connects to the server using an ip address and port number
+//Returns: bool
 bool ClientSocket::connectToServer(const char *ipAddress, int port)
 {
     //populate values in the struct
@@ -20,13 +20,17 @@ bool ClientSocket::connectToServer(const char *ipAddress, int port)
 
     if (connect(mySocket,(SOCKADDR*)&myAddress, sizeof(myAddress)) == SOCKET_ERROR) //if there is an error connecting, print error and end program
     {
-        cerr<<"ClientSocket: Failed to connect\n"; //error message
+        cerr<<"ClientSocket: Failed to connect.\n"; //error message
         return false;
     }
 
     return true;
 }
 
+//Name: checkError()
+//Parameters: string, int
+//Purpose: checks to see if there is an error, if so, send back error and message
+//Returns: bool
 bool ClientSocket::checkError(string message, int error)
 {
     if(atoi(message.substr(0,3).c_str()) != error)
@@ -44,6 +48,10 @@ bool ClientSocket::checkError(string message, int error)
     return true;
 }
 
+//Name: encrypt()
+//Parameters: string
+//Purpose: takes a string from the user and encrypts it using 133t h4x0ring
+//Returns: string
 string ClientSocket::encrypt(string message)
 {
     int aVal; //will hold ascii value of each character
@@ -66,6 +74,10 @@ string ClientSocket::encrypt(string message)
     return message; //return the new message which is now encrypted
 }
 
+//Name: decrypt()
+//Parameters: string
+//Purpose: takes a string from the user and decrypts it using 133t h4x0ring
+//Returns: string
 string ClientSocket::decrypt(string message)
 {
     int value = 0; //holds the int value of the char
@@ -88,6 +100,10 @@ string ClientSocket::decrypt(string message)
     return message; //returning the string
 }
 
+//Name: split()
+//Parameters: Pointer to a vector of strings, a string that needs to be split, a delimeter to split the string with.
+//Purpose: Split string according to given delimeter and add those elements to a vector.
+//Returns: Number of elements added to the vector as an int.
 int ClientSocket::split(vector<string>* v, string s, string del)
 {
     //if the delimeter does not appear once, return 0 because string will not be split

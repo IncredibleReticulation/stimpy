@@ -11,6 +11,7 @@
 #include <vector>
 #include <sstream>
 #include "WinSock2.h"
+
 using namespace std;
 
 class Socket
@@ -21,17 +22,17 @@ class Socket
         SOCKET myBackup;
         SOCKET acceptSocket;
         sockaddr_in myAddress;
+    
     public:
-        //constructor/destructor
-        Socket();   //default
-        ~Socket();  //default
+
+        Socket();   //default constructor
+        ~Socket();  //default destructor
 
         //communication methods
         bool sendData(string);
 		bool sendData(int);
         int recvData(string&);
         void closeConnection();
-        string getAndSendMessage(const string&);
         int split(vector<string>*, string, string);
 };
 

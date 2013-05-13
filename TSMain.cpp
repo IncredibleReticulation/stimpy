@@ -202,6 +202,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
                             Sleep(250);
                             fifoClient.sendData(sendMessage); //send the data, it's already encrypted
                         }
+                        
                         fifoClient.sendData(".");
 
                         serverFlop = fifoClient.recvData(recMessage); //get data from server
@@ -228,8 +229,7 @@ DWORD WINAPI relayMail(LPVOID lpParam)
 
                 } //end of the sending while
 
-                //close connection to the server because we're done
-                if(!isFTS)
+                if(!isFTS)//close connection to the server because we're done
                 {
                     fifoClient.closeConnection();
                 }
@@ -239,7 +239,6 @@ DWORD WINAPI relayMail(LPVOID lpParam)
         } //end of the if checking the mutex result
         Sleep(5000); //wait a little while before trying to open the file again
     } //end of the entire while loop
-
 }
 
 //our thread for client connections - takes in a socket as a parameter
@@ -253,7 +252,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
     string recMessage = ""; //will hold the command the client sent
     string sendMessage = ""; //will hold the reply we send
-    bool isGuest = false;
+    bool isGuest = false; //checks to see if the user is a guest
     int clientFlop = 0; //will hold the value that the recv function returns
 
     //send the welcome message and receive input back from the client
@@ -281,7 +280,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 	} while (!bHeloSent);
 
     current_client.recvData(recMessage); //receiving the verify and a username
-    string username;
+    string username; //will hold the name of the user
 
     //checking to see if it's a verify
     if (upCase(recMessage.substr(0,4)) == "VRFY")
@@ -318,8 +317,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
         if(upCase(recMessage.substr(0,9)) == "MAIL FROM")
         {
-            string sender = recMessage.substr(11, recMessage.length()-12);
-            //cout << "Sender  = " << sender << endl;
+            string sender = recMessage.substr(11, recMessage.length()-12); //parsing recMessage to find the sender
             
             cout << "Client Sent: " << recMessage << endl; //for debugging
             current_client.sendData(Status::SMTP_ACTION_COMPLETE);
@@ -344,7 +342,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                 if (sRecipient.find("@") == -1)
                 {
-                    cout << "Assuming this is a local address\n";
+                    cout << "Assuming this user is local.\n";
                     sRecipient += "@" + sSrvrIP;
                     bLocalDelivery = TRUE;
                 }
@@ -360,28 +358,25 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 if(isGuest && !bLocalDelivery) //if the guest account tries to send an email to a user not on our server, send bad error code
                     current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Guest doesn't have permission to send emails to outside servers.");
                 else if(bLocalDelivery && !current_client.validateUser(sRecipient.substr(0,sRecipient.find("@"))))
-                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient"); //sending back a bad error code
+                    current_client.sendResponse(Status::SMTP_CMD_SNTX_ERR, "Malformed Recipient."); //sending back a bad error code
                 else
                 {
                     current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //if the username was valid, send back 250
                     bRecipientSent = TRUE;
 
                     //getting data and writing to file part
-                    //cout << "before recvdata: " << recMessage << endl;
                     clientFlop = current_client.recvData(recMessage); //getting more data from client
-                    //cout << "after recvdata " << recMessage << endl;
 
                     //checking to see if the string is DATA
                     if (upCase(recMessage.substr(0,6)) != "DATA")
                     {
-                        cout << "DATA wasn't received\n";
+                        cout << "DATA wasn't received.\n";
                         current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //send error
                     }
                     else
                     {
                         //get the data of the message part
-                        //create file output object and open it in append mode
-                        ofstream fout;
+                        ofstream fout;//create file output object and open it in append mode
 
                         if(bLocalDelivery) //if local
                             fout.open ((string(sRecipient.substr(0,sRecipient.find("@")) + ".txt")).c_str(), ios::app);
@@ -414,7 +409,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                             if(recMessage != "\n")
                                 fout << endl;
 
-                            cout << "Message: " << recMessage << endl;
+                            cout << "Encrypted data sent: " << recMessage << endl;
 
                             clientFlop = current_client.recvData(recMessage); //getting next line from the user
                         }
@@ -422,9 +417,8 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         //write a . to denote the end of the message
                         fout << "." << endl;
 
-                        //send status code that action is complete and close the file
-                        current_client.sendData(Status::SMTP_ACTION_COMPLETE);
-                        fout.close();
+                        current_client.sendData(Status::SMTP_ACTION_COMPLETE);//send status code that action is complete
+                        fout.close(); //closing the file
                         isWritten = true; //set this to true because the file is now written
                     }
                 }
@@ -436,9 +430,7 @@ DWORD WINAPI handleMail(LPVOID lpParam)
             cout << "The Client Sent: " << recMessage << endl;
 
             if (isGuest == true) //if isGuest is true, send an error and send error
-            {
-                current_client.sendResponse(Status::SMTP_MBOX_UNAV, "No mailbox on a guest account.");
-            }
+                current_client.sendResponse(Status::SMTP_MBOX_UNAV, "No mailbox on a guest account."); //sending an error code
 
             else
             {
@@ -446,9 +438,8 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                 ifstream fin(string(username + ".txt").c_str()); //file input object
 
                 if(!fin.is_open()) //check if the file opens or not
-                {
-                    current_client.sendResponse(Status::SMTP_MBOX_UNAV, "No messages in your inbox."); //send back that there aren't any messages
-                } else
+                    current_client.sendResponse(Status::SMTP_MBOX_UNAV, "No messages in your inbox."); //send back that there aren't any messages 
+                else
                 {
                     current_client.sendResponse(Status::SMTP_ACTION_COMPLETE, "OK"); //send 250 OK so they know we got the command okay then send mail
 
@@ -478,16 +469,14 @@ DWORD WINAPI handleMail(LPVOID lpParam)
         else
         {
             cout << "Client didn't send 'MAIL FROM' or 'INBOX' in the beginning\n";
-            current_client.sendData(Status::SMTP_CMD_SNTX_ERR);
+            current_client.sendData(Status::SMTP_CMD_SNTX_ERR); //sending back an error code
         }
 
         //get data from the client before starting loop again
         clientFlop = current_client.recvData(recMessage);
 
         if (clientFlop == -1) //if they sent quit, break from while loop and the thread will end after exiting this
-        {
             break;
-        }
 
         if(upCase(recMessage) == "QUIT")
         {
@@ -518,9 +507,7 @@ int main(int argc, char * argv[])
     int ret = WSAStartup(0x101,&wsaData); //use highest version of winsock avalible
 
     if(ret != 0)
-    {
         return 0;
-    }
 
     sSrvrIP = string(argv[1]);
     //fill in winsock struct ...
@@ -532,23 +519,17 @@ int main(int argc, char * argv[])
     sock=socket(AF_INET,SOCK_STREAM,0);
 
     if(sock == INVALID_SOCKET)
-    {
         return 0;
-    }
 
     //bind our socket to a port(port 123)
     if(bind(sock,(sockaddr*)&server,sizeof(server)) !=0)
-    {
         return 0;
-    }
 
     //listen for a connection
     if(listen(sock,5) != 0)
-    {
         return 0;
-    }
 
-    //for our thread
+    //creating 2 seperate instances
     DWORD thread;
     DWORD thread2;
 

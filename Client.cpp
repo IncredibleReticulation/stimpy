@@ -18,7 +18,7 @@ int main(int argc, char * argv[])
 {
     if(argc != 3)
     {
-        cout << "USAGE: " << argv[0] << " servername(ip) portnum (usually 31000)" << endl;
+        cerr << "USAGE: " << argv[0] << " servername(ip) portnum (usually 31000)" << endl;
         return 1;
     }
 
@@ -43,7 +43,7 @@ int main(int argc, char * argv[])
     }
     else
     {
-        cout << "Server did not indicate that they were ready to initiate a connection :(\n";
+        cout << "Server did not indicate that they were ready to initiate a connection.\n";
         return 69; //end program
     }
 
@@ -59,7 +59,7 @@ int main(int argc, char * argv[])
     }
     else
     {
-        cout << "Server may not have gotten our 'HELO' :(\n";
+        cout << "Server didn't get 'HELO'.\n";
         return 69; //ends program
     }
 
@@ -69,7 +69,7 @@ int main(int argc, char * argv[])
     //check if we logged in successfully
     if(recMessage.substr(0,3) == "550" || recMessage.substr(0,3) == "500") //if login fails, print error and end program
     {
-        cout << "Invalid user...\n";
+        cout << "Invalid user.\n";
         sockClient.closeConnection(); //close connection
         return 1;
     }
@@ -79,7 +79,7 @@ int main(int argc, char * argv[])
     }
     else
     {
-        cout << "Unknown error when attempting to login to server...\n";
+        cerr << "Unknown error when attempting to login to server...\n";
         return -69; //ends program
     }
 
@@ -90,7 +90,7 @@ int main(int argc, char * argv[])
     {
         if(serverFlop == -1)
         {
-            cout << "There's been an unknown error on the server. Try reconnecting momentarily...\n\n";
+            cerr << "There's been an unknown error on the server. Try reconnecting momentarily...\n\n";
             break;
         }
         if(option > 0 && option < 4) //only print menu if they entered a valid option last time
@@ -149,7 +149,6 @@ int main(int argc, char * argv[])
                 //get data from client and send it over
                 cout << "Enter data. Press '.' when the message is over.\n"; //prompt for data
                 cin.ignore(10000, '\n'); //ignore any newlines
-                //getline(cin, sendMessage); //get the message to send
                 
                 while(sendMessage != ".") //while user doesn't enter a period, keep sending data for message
                 {
@@ -170,11 +169,12 @@ int main(int argc, char * argv[])
 
                 //check for an error
                 if(sockClient.checkError(recMessage, Status::SMTP_ACTION_COMPLETE))
-                    cout << "Message sent successfully! :)\n\n";
+                    cout << "Message sent successfully.\n\n";
                 else
-                    cerr << "Error sending message. Please retry in a few minutes. :(\n\n";
+                    cerr << "Error sending message. Please retry in a few minutes.\n\n";
 
                 break; //break from case
+            
             case 2: //option 2, to read messages in the user's mailbox
                 sockClient.sendData("INBOX"); //send the inbox command
                 sockClient.recvData(recMessage); //await a reply with a status code from the server
@@ -184,7 +184,7 @@ int main(int argc, char * argv[])
                     break; //break if we found an error
 
                 //print a heading and start getting the message
-                cout << endl << "Your mailbox\n\n";
+                cout << endl << "Your mailbox:\n\n";
                 sockClient.recvData(recMessage); //get the first part of the email message
                 
                 while(recMessage != "EOF")
@@ -192,19 +192,20 @@ int main(int argc, char * argv[])
                     if(recMessage != "EOF")
                         sockClient.sendData("OK");
                     
-                    lineCount++;
+                    lineCount++; //adding one to the line count
                     if(recMessage == ".") //if the last message sent was a period, that's the entire email and we can print it out
                     {
                         if(messageCount > 0) //if this isn't the first message, print a message separator
-                            cout << "\n**********************************************\n\n";
+                            cout << "\n***************************************************************************\n\n";
 
                         messageCount++; //increment message count
                         lineCount = 0; //reset line count
 
                         //print out the message and reset the message buffer string
                         cout << messBuf << endl;
-                        messBuf = "";
-                    } else
+                        messBuf = ""; //clearing the message buffer
+                    } 
+                    else
                     {
                         switch(lineCount)
                         {
@@ -228,7 +229,7 @@ int main(int argc, char * argv[])
                     sockClient.recvData(recMessage); //get the next part of the email message
                 }
 				
-                cout << "End of the inbox!\n\n"; //letting the client know it's the end of their inbox
+                cout << "End of the inbox.\n\n"; //letting the client know it's the end of their inbox
                 break;
             case 3: //option 3, to quit
                 //code
@@ -237,13 +238,12 @@ int main(int argc, char * argv[])
                 //sockClient.recvData(recMessage); //get the final message
                 break;
             default:
-                cerr << "You entered an invalid command...\n";
+                cerr << "You entered an invalid command.\n";
                 break;
         }
     }
-
-    //close the connection
-    sockClient.closeConnection();
+    
+    sockClient.closeConnection(); //close the connection
 
     return 0; //ends program
 }

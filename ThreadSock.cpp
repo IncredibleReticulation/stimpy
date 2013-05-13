@@ -6,7 +6,11 @@
 #include <ctime>
 #include "ThreadSock.h"
 
-//default constructor which will read in users from the text file and put it in the vector
+
+//Name: ThreadSock()
+//Parameters: NONE
+//Purpose: default constructor which will read in users from the text file and put it in the vector
+//Returns: NONE
 ThreadSock::ThreadSock()
 {
     ifstream fin("users.txt"); //create file input object to read users in
@@ -19,20 +23,20 @@ ThreadSock::ThreadSock()
         while(!fin.eof()) //while not at the end of file, keep reading in users
         {
             users.push_back(temp); //add the user to the next spot in the users vector
-
             getline(fin, temp); //get the next user in the file
         }
-    } else //if the file cannot open, don't access file and output an error
-    {
+    } 
+    else //if the file cannot open, don't access file and output an error
         cerr << "users.txt cannot be opened...\n";
-    }
-    
 }
 
-//blank default destructor
+//Name: ThreadSock()
+//Parameters: NONE
+//Purpose: basic constructor
+//Returns: NONE
 ThreadSock::~ThreadSock()
 {
-
+    //constructor    
 }
 
 void ThreadSock::setSock(SOCKET socket)
@@ -40,10 +44,10 @@ void ThreadSock::setSock(SOCKET socket)
     this -> socket = socket;
 }
 
-//Name: listFiles()
-//Parameters: NOT KNOWN YET
-//Purpose: This function lists all of the files that are avalible for tansfer
-//Returns: NOT KNOWN YET
+//Name: sendData()
+//Parameters: string
+//Purpose: takes a string from the user, turns it into a char array and sends it
+//Returns: bool - returns true if 
 bool ThreadSock::sendData(string s)
 {
     const char *buffer = s.c_str();
@@ -51,6 +55,10 @@ bool ThreadSock::sendData(string s)
     return true; //return true for success
 }
 
+//Name: sendData()
+//Parameters: string
+//Purpose: takes a int from the user, then calls the senData function to send it as a char array
+//Returns: bool
 bool ThreadSock::sendData(int i)
 {
     stringstream s;
@@ -58,6 +66,10 @@ bool ThreadSock::sendData(int i)
     return this -> sendData(s.str());
 }
 
+//Name: sendResponse()
+//Parameters: int, string
+//Purpose: sends a response code and message to a client
+//Returns: bool - returns true if sent
 bool ThreadSock::sendResponse(int responseCode, string message)
 {
 	stringstream s;
@@ -65,10 +77,10 @@ bool ThreadSock::sendResponse(int responseCode, string message)
 	this -> sendData(s.str());
 }
 
-//Name: listFiles()
-//Parameters: NOT KNOWN YET
-//Purpose: This function lists all of the files that are avalible for tansfer
-//Returns: NOT KNOWN YET
+//Name: recvData()
+//Parameters: string
+//Purpose: recieves data and changes it to a char array
+//Returns: int - if data == -1, then they're disconnected
 int ThreadSock::recvData(string &s)
 {
     char buffer[1000];
@@ -78,34 +90,10 @@ int ThreadSock::recvData(string &s)
     return i; //return true for success
 }
 
-//Name: split()
-//Parameters: Pointer to a vector of strings, a string that needs to be split, a delimeter to split the string with.
-//Purpose: Split string according to given delimeter and add those elements to a vector.
-//Returns: Number of elements added to the vector as an int.
-int ThreadSock::split(vector<string>* v, string s, string del)
-{
-    //if the delimeter does not appear once, return 0 because string will not be split
-    if(s.find(del) == -1)
-    {
-        v->push_back(s); //put the string in the vector so the user can still use the value they passed in
-        return 0;
-    }
-        
-    int delims = 0; //will hold number of delimeters found in the string that needs to be split
-
-    while(s.find(del) != -1) //while there is still a delimeter present, continue to break the string apart
-    {
-        v->push_back(s.substr(0, s.find(del)));     //add part of string up to the delimeter to the vector
-        s.erase(0, s.find(del) + 1);                //delete added part
-        delims++; //increment
-    }
-
-    v->push_back(s.substr(0));  //add the rest of the string after the final delimeter
-
-    return delims + 1;          //return number of elements added to the vector
-}
-
-//This fuction will validate life.
+//Name: validateUser()
+//Parameters: string
+//Purpose: validates the user on the server
+//Returns: bool - true if the user exists
 bool ThreadSock::validateUser(string user)
 {
     for(int i = 0; i < this -> users.size(); i++)
@@ -115,6 +103,10 @@ bool ThreadSock::validateUser(string user)
     return false;
 }
 
+//Name: getDateTime()
+//Parameters: string
+//Purpose: gets the date and time and presents it in a readbale fashion
+//Returns: bool - true if the user exists
 string ThreadSock::getDateTime()
 {
     time_t rawtime; //to get the right time
@@ -133,6 +125,10 @@ string ThreadSock::getDateTime()
     return (date + ", " + time);
 }
 
+//Name: closeConnection()
+//Parameters: NONE
+//Purpose: closes the connection
+//Returns: NONE
 void ThreadSock::closeConnection()
 {
     closesocket(socket); //close our socket

@@ -6,39 +6,37 @@
 
 #include "Socket.h"
 
-//Name: listFiles()
-//Parameters: NOT KNOWN YET
-//Purpose: This function lists all of the files that are avalible for tansfer
+//Name: Socket()
+//Parameters: NONE
+//Purpose: default constructor for Socket
+//Returns: NONE
 Socket::Socket()
 {
     if(WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR) //if there is an error, print an error and exit the program
-    {
         cerr<<"Socket Initialization: Error with WSAStartup\n"; //error message
-    }
 
     //Create a socket
     mySocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
     if (mySocket == INVALID_SOCKET) //if there is an error creating or connecting with the socket print an error and end program
-    {
         cerr << "Socket Initialization: Error creating socket\n"; //error message
-    }
 
     myBackup = mySocket; //backup our current socket for future use in case
 }
 
-//Name: listFiles()
-//Parameters: NOT KNOWN YET
-//Purpose: This function lists all of the files that are avalible for tansfer
+//Name: ~Socket()
+//Parameters: NONE
+//Purpose: default destructor for Socket
+//Returns: NONE
 Socket::~Socket()
 {
     WSACleanup();
 }
 
-//Name: listFiles()
-//Parameters: NOT KNOWN YET
-//Purpose: This function lists all of the files that are avalible for tansfer
-//Returns: NOT KNOWN YET
+//Name: sendData()
+//Parameters: string
+//Purpose: takes a string from the user and sends it
+//Returns: bool
 bool Socket::sendData(string s)
 {
     const char *buffer = s.c_str();
@@ -46,6 +44,10 @@ bool Socket::sendData(string s)
     return true; //return true for success
 }
 
+//Name: sendData()
+//Parameters: int
+//Purpose: takes a int from the user, then calls send data to send as char array
+//Returns: bool 
 bool Socket::sendData(int i)
 {
     stringstream s;
@@ -53,10 +55,10 @@ bool Socket::sendData(int i)
     return this -> sendData(s.str());
 }
 
-//Name: listFiles()
-//Parameters: NOT KNOWN YET
-//Purpose: This function lists all of the files that are avalible for tansfer
-//Returns: NOT KNOWN YET
+//Name: recvData()
+//Parameters: string
+//Purpose: recieves data and changes it to a char array
+//Returns: int - if data == -1, then they're disconnected
 int Socket::recvData(string &s)
 {
     char buffer[1000];
@@ -66,28 +68,14 @@ int Socket::recvData(string &s)
     return i; //return true for success
 }
 
-//Name: listFiles()
-//Parameters: NOT KNOWN YET
-//Purpose: This function lists all of the files that are avalible for tansfer
-//Returns: NOT KNOWN YET
+//Name: closeConnection()
+//Parameters: NONE
+//Purpose: closes the connection
+//Returns: NONE
 void Socket::closeConnection()
 {
     closesocket(mySocket);
     mySocket = myBackup;
-}
-
-//Name: listFiles()
-//Parameters: NOT KNOWN YET
-//Purpose: This function lists all of the files that are avalible for tansfer
-//Returns: NOT KNOWN YET
-string Socket::getAndSendMessage(const string &prompt)
-{
-    string command; //holds the command the user enters
-    cout << prompt; //prompt
-    getline(cin, command); //get the command from the user
-    sendData(command); //send the command to server
-
-    return (command);
 }
 
 //Name: split()
