@@ -1,17 +1,14 @@
 //ThreadSock header file
 //Course: 4050-212-02
 //Authors: Alex Buie, Luke Matarazzo, Jackson Sadowski, Steven Tucker
-//Filename:ThreadSock.cpp
+//Filename: ThreadSock.h
 
 #include <vector>
 #include <string>
 #include <winsock2.h>
-#include <ws2tcpip.h>
-#include <windows.h>
 #include <sstream>
 #include <iostream>
 #include <fstream>
-
 using namespace std;
 
 class ThreadSock

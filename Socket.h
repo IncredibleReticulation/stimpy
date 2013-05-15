@@ -5,13 +5,11 @@
 
 #ifndef SOCKET_H
 #define SOCKET_H
-#pragma once
 #include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
 #include "WinSock2.h"
-
 using namespace std;
 
 class Socket

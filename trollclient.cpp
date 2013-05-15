@@ -6,8 +6,6 @@
 //Filename: Client.cpp   client main
 //Purpose: 
 
-#include <iostream>
-#include <cstdlib>
 #include "Status.h"
 #include "ClientSocket.h"
 
@@ -481,6 +479,10 @@ int main(int argc, char * argv[])
     return 0; //ends program
 }
 
+//Name: trim()
+//Parameters: string
+//Purpose: removes all leading and trailing white space
+//Returns: the new string
 string trim(string s)
 {   
     while(isspace(s[0])) //if the first thing is a space, erase it until it is longer a space.

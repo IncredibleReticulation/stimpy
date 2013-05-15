@@ -4,13 +4,12 @@
 //Filename: ClientSocket.cpp
 //Purpose: 
 
-#include <fstream>
 #include "ClientSocket.h"
 
 //Name: connectToServer()
 //Parameters: char array, int
 //Purpose: connects to the server using an ip address and port number
-//Returns: bool
+//Returns: bool, true if connected successfully and false if not
 bool ClientSocket::connectToServer(const char *ipAddress, int port)
 {
     //populate values in the struct
@@ -28,9 +27,9 @@ bool ClientSocket::connectToServer(const char *ipAddress, int port)
 }
 
 //Name: checkError()
-//Parameters: string, int
-//Purpose: checks to see if there is an error, if so, send back error and message
-//Returns: bool
+//Parameters: string to check, int which is the statue code it should match
+//Purpose: checks to see if there is an error, if so, print out that there was an error
+//Returns: bool, true if the message and error code match, false if they don't
 bool ClientSocket::checkError(string message, int error)
 {
     if(atoi(message.substr(0,3).c_str()) != error)
@@ -51,7 +50,7 @@ bool ClientSocket::checkError(string message, int error)
 //Name: encrypt()
 //Parameters: string
 //Purpose: takes a string from the user and encrypts it using 133t h4x0ring
-//Returns: string
+//Returns: encrypted string
 string ClientSocket::encrypt(string message)
 {
     int aVal; //will hold ascii value of each character
@@ -77,7 +76,7 @@ string ClientSocket::encrypt(string message)
 //Name: decrypt()
 //Parameters: string
 //Purpose: takes a string from the user and decrypts it using 133t h4x0ring
-//Returns: string
+//Returns: decrypted string
 string ClientSocket::decrypt(string message)
 {
     int value = 0; //holds the int value of the char

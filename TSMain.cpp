@@ -6,19 +6,18 @@
 //Filename: TSMain.cpp   server main
 //Purpose:
 
-#define _WIN32_WINNT 0x501
-#include <cstdlib>
-#include <cctype>
 #include "ThreadSock.h"
 #include "ClientSocket.h"
 #include "Status.h"
 #include <algorithm>
 
-using namespace std;
-
 string sSrvrIP; //global variable which holds the IP address of the server
 bool isWritten = false; //global boolean which will indicate whether or not we have written to the fifo file
 
+//Name: upCase()
+//Parameters: string to be manipulated
+//Purpose: makes the entire string uppercase
+//Returns: the new string
 string upCase(string str)
 {
     std::transform(str.begin(), str.end(), str.begin(), ::toupper);

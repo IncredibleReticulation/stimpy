@@ -8,8 +8,7 @@
 
 //Name: Socket()
 //Parameters: NONE
-//Purpose: default constructor for Socket
-//Returns: NONE
+//Purpose: default constructor for Socket which creates our socket, a backup of it and tests to make sure there was no error
 Socket::Socket()
 {
     if(WSAStartup(MAKEWORD(2, 2), &wsaData) != NO_ERROR) //if there is an error, print an error and exit the program
@@ -26,17 +25,16 @@ Socket::Socket()
 
 //Name: ~Socket()
 //Parameters: NONE
-//Purpose: default destructor for Socket
-//Returns: NONE
+//Purpose: destructor for Socket which just performs windows socket cleanup stuff
 Socket::~Socket()
 {
     WSACleanup();
 }
 
 //Name: sendData()
-//Parameters: string
+//Parameters: string which is the message to be sent
 //Purpose: takes a string from the user and sends it
-//Returns: bool
+//Returns: bool, true for success (which it will always be technically)
 bool Socket::sendData(string s)
 {
     const char *buffer = s.c_str();
@@ -45,9 +43,9 @@ bool Socket::sendData(string s)
 }
 
 //Name: sendData()
-//Parameters: int
+//Parameters: int to be sent
 //Purpose: takes a int from the user, then calls send data to send as char array
-//Returns: bool 
+//Returns: bool, true for success (which it will always be technically)
 bool Socket::sendData(int i)
 {
     stringstream s;
@@ -56,8 +54,8 @@ bool Socket::sendData(int i)
 }
 
 //Name: recvData()
-//Parameters: string
-//Purpose: recieves data and changes it to a char array
+//Parameters: string by reference so we can set it equal to the message we received
+//Purpose: recieves data and sets our string equal to it
 //Returns: int - if data == -1, then they're disconnected
 int Socket::recvData(string &s)
 {
@@ -65,7 +63,7 @@ int Socket::recvData(string &s)
     int i = recv(mySocket, buffer, 1000, 0);
     buffer[i] = '\0';
     s = buffer;
-    return i; //return true for success
+    return i; //return number of bytes returned by recv function, -1 if they disconnected
 }
 
 //Name: closeConnection()
