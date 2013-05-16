@@ -376,9 +376,11 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                     {
                         //get the data of the message part
                         ofstream fout;//create file output object and open it in append mode
-
+						ofstream flog;
+						flog.open("mail.log",ios::app);
                         if(bLocalDelivery) //if local
                             fout.open ((string(sRecipient.substr(0,sRecipient.find("@")) + ".txt")).c_str(), ios::app);
+							
                         else //if on a different server and needs to be relayed
                         {
                             while(!canWrite)
@@ -392,8 +394,10 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                         }
 
                         //write the initial part of the email
-                        fout << current_client.getDateTime() << endl << sRecipient << endl << sender << endl;
-
+						string dt = current_client.getDateTime();
+                        fout << dt << endl << sRecipient << endl << sender << endl;
+						flog << dt << endl << sRecipient << endl << sender << endl;
+						
                         //tell client to send data, then get data and write to file
                         current_client.sendResponse(Status::SMTP_BEGIN_MSG,"OK -- Send Data");
                         clientFlop = current_client.recvData(recMessage); //getting a line from the client
@@ -404,10 +408,15 @@ DWORD WINAPI handleMail(LPVOID lpParam)
                                 break;
 
                             fout << recMessage; //write line to file
-
+							flog << recMessage;
+							
+							
                             if(recMessage != "\n")
+							{
+								flog << endl;
                                 fout << endl;
-
+							}
+							
                             cout << "Encrypted data sent: " << recMessage << endl;
 
                             clientFlop = current_client.recvData(recMessage); //getting next line from the user
@@ -415,9 +424,11 @@ DWORD WINAPI handleMail(LPVOID lpParam)
 
                         //write a . to denote the end of the message
                         fout << "." << endl;
+						flog << "." << endl;
 
                         current_client.sendData(Status::SMTP_ACTION_COMPLETE);//send status code that action is complete
                         fout.close(); //closing the file
+						flog.close();
                         isWritten = true; //set this to true because the file is now written
                     }
                 }
